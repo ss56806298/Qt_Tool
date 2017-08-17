@@ -36,6 +36,7 @@ ui::ui(QWidget *parent)
 
     layout->addWidget(file_version_label, 8, 0, 1, 1);
     layout->addWidget(file_version_line, 8, 1, 1, 1);
+    layout->addWidget(search_version_button, 8, 2, 1, 1);
 
     layout->addWidget(file_url_label, 9, 0, 1, 1);
     layout->addWidget(file_url_line, 9, 1, 1, 1);
@@ -52,6 +53,7 @@ ui::ui(QWidget *parent)
     connect(area_version_button, &QPushButton::clicked, this, &ui::clickVersionChange);
     connect(open_file_button, &QPushButton::clicked, this, &ui::openFile);
     connect(upload_update_resource_button, &QPushButton::clicked, this, &ui::uploadFile);
+    connect(search_version_button, &QPushButton::clicked, this, &ui::searchVersionResource);
 }
 
 //获取渠道组信息并填充
@@ -192,7 +194,86 @@ void ui::uploadFileResult(QNetworkReply *reply)
     //使用utf8编码, 这样可以显示中文
     QTextCodec *codec = QTextCodec::codecForName("utf8");
     QString str = codec->toUnicode(reply->readAll());
+
+    //获取当前文件PATH
+    QString path = file_path_line->text();
+
     if (str == "success") {
-        upload_update_resource_result_label->setText(str);
+        upload_update_resource_result_label->setText(path + " " + str);
     }
+}
+
+//查询当前版本的资源
+void ui::searchVersionResource(){
+    QString area = area_box->currentText();
+    QString version = file_version_line->text();
+
+    n_manager = new QNetworkAccessManager(this);
+    connect(n_manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(appearVersionResource(QNetworkReply *)));
+
+    //拼接URL
+    QString url = "http://106.75.36.193:82/original_server/common/versionResourceSearch?version=" + version + "&area=" + area;
+
+    n_manager->get(QNetworkRequest(QUrl(url)));
+}
+
+//将查询到的版本资源显示出来
+void ui::appearVersionResource(QNetworkReply *reply) {
+    QString version = file_version_line->text();
+
+    //使用utf8编码, 这样可以显示中文
+//    QTextCodec *codec = QTextCodec::codecForName("utf8");
+//    QString str = codec->toUnicode(reply->readAll());
+
+    QMainWindow *windowR = new QMainWindow;
+
+    windowR->setWindowTitle(version);
+
+    QGridLayout *layout_version = new QGridLayout();
+
+    QWidget *widget_version = new QWidget;
+
+    QLabel *path_resource_title_label = new QLabel("路径");
+    QLabel *size_resource_title_label = new QLabel("文件大小");
+    QLabel *md5_resource_title_label = new QLabel("MD5值");
+    QLabel *url_resource_title_label = new QLabel("资源下载链接");
+
+    layout_version->addWidget(path_resource_title_label, 0, 0, 1, 1);
+    layout_version->addWidget(size_resource_title_label, 0, 1, 1, 1);
+    layout_version->addWidget(md5_resource_title_label, 0, 2, 1, 1);
+    layout_version->addWidget(url_resource_title_label, 0, 3, 1, 1);
+
+    //JSON数据放到新窗口
+    QJsonParseError error;
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(reply->readAll(), &error);
+    if (error.error == QJsonParseError::NoError) {
+        if (jsonDocument.isObject()) {
+            QVariantMap result = jsonDocument.toVariant().toMap();
+            int i = 1;
+            foreach (QVariant updateResourceT, result["update_resource"].toList()) {
+//                QString path_resource = updateResource["path"].toString();
+//                QString size_resource = updateResource["size"].toString();
+//                QString md5_resource = updateResource["md5"].toString();
+//                QString url_resource = updateResource["url"].toString();
+                QVariantMap updateResource = updateResourceT.toMap();
+                QLabel *path_resource_label = new QLabel(updateResource["path"].toString());
+                QLabel *size_resource_label = new QLabel(updateResource["size"].toString());
+                QLabel *md5_resource_label = new QLabel(updateResource["md5"].toString());
+                QLabel *url_resource_label = new QLabel(updateResource["url"].toString());
+
+                layout_version->addWidget(path_resource_label, i, 0, 1, 1);
+                layout_version->addWidget(size_resource_label, i, 1, 1, 1);
+                layout_version->addWidget(md5_resource_label, i, 2, 1, 1);
+                layout_version->addWidget(url_resource_label, i, 3, 1, 1);
+
+                i++;
+            }
+        }
+    }
+
+    widget_version->setLayout(layout_version);
+
+    windowR->setCentralWidget(widget_version);
+
+    windowR->show();
 }

@@ -34,6 +34,7 @@ class ui : public QMainWindow
         QPushButton *area_version_button = new QPushButton("提交版本号");
         QPushButton *open_file_button = new QPushButton("选择文件");
         QPushButton *upload_update_resource_button = new QPushButton("上传热更新文件");
+        QPushButton *search_version_button = new QPushButton("查询资源");
         //标签
         QLabel *area_name_label = new QLabel("渠道组");
         QLabel *area_name_content_label = new QLabel();
@@ -71,6 +72,8 @@ class ui : public QMainWindow
         void openFile();
         void uploadFile();
         void uploadFileResult(QNetworkReply *reply);
+        void searchVersionResource();
+        void appearVersionResource(QNetworkReply *reply);
 
     private:
 
