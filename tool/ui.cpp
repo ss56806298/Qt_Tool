@@ -1,4 +1,5 @@
 #include "ui.h"
+#include "user.h"
 
 ui::ui(QWidget *parent)
     : QMainWindow(parent)
@@ -13,6 +14,7 @@ ui::ui(QWidget *parent)
     //布局
     layout->addWidget(area_box, 0, 0, 1, 1);
     layout->addWidget(search_button, 0, 1, 1, 1);
+    layout->addWidget(user_operate_button, 0, 2, 1, 1);
 
     layout->addWidget(area_name_label, 1, 0, 1, 1);
     layout->addWidget(area_name_content_label, 1, 1, 1, 1);
@@ -54,6 +56,7 @@ ui::ui(QWidget *parent)
     connect(open_file_button, &QPushButton::clicked, this, &ui::openFile);
     connect(upload_update_resource_button, &QPushButton::clicked, this, &ui::uploadFile);
     connect(search_version_button, &QPushButton::clicked, this, &ui::searchVersionResource);
+    connect(user_operate_button, &QPushButton::clicked, this, &ui::userOperate);
 }
 
 //获取渠道组信息并填充
@@ -276,4 +279,11 @@ void ui::appearVersionResource(QNetworkReply *reply) {
     windowR->setCentralWidget(widget_version);
 
     windowR->show();
+}
+
+//打开用户操作的界面
+void ui::userOperate() {
+    user *u = new user(this);
+
+    u->show();
 }
