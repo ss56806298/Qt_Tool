@@ -22,13 +22,20 @@ user::user(ui *ui, QWidget *parent)
     layout->addWidget(search_nickname_line, 1, 1, 1, 1);
     layout->addWidget(search_nickname_button, 1, 2, 1, 1);
 
+    layout->addWidget(user_ids_line, 2, 0, 4, 3);
+
+    reward_id_line->setMaxLength(5);
+    layout->addWidget(reward_id_line, 6, 0, 1, 1);
+    layout->addWidget(reward_users_button, 6, 2, 1, 1);
+    layout->addWidget(reward_frame_result_label, 7, 0, 1, 3);
+
     widget->setLayout(layout);
 
     setCentralWidget(widget);
 
     //信号
     connect(search_nickname_button, &QPushButton::clicked, this, &user::searchUserInfo);
-
+    connect(reward_users_button, &QPushButton::clicked, this, &user::rewardUsersPortraitOrFrame);
 }
 
 
@@ -147,7 +154,45 @@ void user::setUserInfo(QNetworkReply *reply) {
 }
 
 
+
 //根据服务器的编号获取服务器的address
 QString user::getAddressByServerNum(QString server_num) {
     return serverMap[server_num].server_address;
+}
+
+//发放头像或头像框奖励
+void user::rewardUsersPortraitOrFrame() {
+    QString server_num_string = server_num_box->currentText();
+
+    //获取游戏服务器的地址
+    QString server_address = getAddressByServerNum(server_num_string);
+
+    //需要查询的ids
+    QString user_ids = user_ids_line->toPlainText();
+
+    //需要发放的ID
+    QString reward_id = reward_id_line->text();
+
+    //拼接地址
+    QUrl url = "http://" + server_address + "/The_Wall/common/rewardUsers";
+
+    QByteArray postData;
+
+    postData.append("user_ids=" + user_ids);
+    postData.append("&reward_id=" + reward_id);
+
+    QNetworkRequest request;
+    request.setUrl(url);
+    request.setRawHeader("Content-Type","application/x-www-form-urlencoded");
+
+    n_manager = new QNetworkAccessManager(this);
+    connect(n_manager, SIGNAL(finished(QNetworkReply *)), this, SLOT(rewardPFResult(QNetworkReply *)));
+    n_manager->post(request, postData);
+
+}
+
+//奖励的结果
+void user::rewardPFResult(QNetworkReply *reply) {
+    QString result = reply->readAll();
+    reward_frame_result_label->setText(result);
 }
