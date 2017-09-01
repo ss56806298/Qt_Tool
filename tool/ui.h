@@ -26,6 +26,8 @@
 
 class ui : public QMainWindow
 {
+    public:
+        QString main_server_ip = "taptap.yxlc.shadowpower.cn";
     Q_OBJECT
     public:
         ui(QWidget *parent = Q_NULLPTR);
@@ -36,6 +38,8 @@ class ui : public QMainWindow
         QPushButton *upload_update_resource_button = new QPushButton("上传热更新文件");
         QPushButton *search_version_button = new QPushButton("查询资源");
         QPushButton *user_operate_button = new QPushButton("用户操作");
+        QPushButton *robot_create_button = new QPushButton("生成机器人");
+        QPushButton *cdkey_create_button = new QPushButton("生成cdkey");
         //标签
         QLabel *area_name_label = new QLabel("渠道组");
         QLabel *area_name_content_label = new QLabel();
@@ -76,6 +80,8 @@ class ui : public QMainWindow
         void searchVersionResource();
         void appearVersionResource(QNetworkReply *reply);
         void userOperate();
+        void createRobot();
+        void createCdkey();
 
     private:
         QNetworkAccessManager *n_manager;

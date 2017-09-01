@@ -1,5 +1,7 @@
 #include "ui.h"
 #include "user.h"
+#include "robot.h"
+#include "cdkey.h"
 
 ui::ui(QWidget *parent)
     : QMainWindow(parent)
@@ -9,12 +11,14 @@ ui::ui(QWidget *parent)
     //获取现在有哪些渠道组
     n_manager = new QNetworkAccessManager(this);
     connect(n_manager, SIGNAL(finished(QNetworkReply *)), this, SLOT(areaFill(QNetworkReply *))); //关联信号和槽
-    n_manager->get(QNetworkRequest(QUrl("http://106.75.36.193:82/original_server/common/areaSearch")));//发送请求
+    n_manager->get(QNetworkRequest(QUrl("http://" + main_server_ip + "/original_server/common/areaSearch")));//发送请求
 
     //布局
     layout->addWidget(area_box, 0, 0, 1, 1);
     layout->addWidget(search_button, 0, 1, 1, 1);
     layout->addWidget(user_operate_button, 0, 2, 1, 1);
+    layout->addWidget(robot_create_button, 0, 3, 1, 1);
+    layout->addWidget(cdkey_create_button, 0, 4, 1, 1);
 
     layout->addWidget(area_name_label, 1, 0, 1, 1);
     layout->addWidget(area_name_content_label, 1, 1, 1, 1);
@@ -57,6 +61,8 @@ ui::ui(QWidget *parent)
     connect(upload_update_resource_button, &QPushButton::clicked, this, &ui::uploadFile);
     connect(search_version_button, &QPushButton::clicked, this, &ui::searchVersionResource);
     connect(user_operate_button, &QPushButton::clicked, this, &ui::userOperate);
+    connect(robot_create_button, &QPushButton::clicked, this, &ui::createRobot);
+    connect(cdkey_create_button, &QPushButton::clicked, this, &ui::createCdkey);
 }
 
 //获取渠道组信息并填充
@@ -115,7 +121,7 @@ void ui::clickAreaSearch()
     connect(n_manager, SIGNAL(finished(QNetworkReply *)), this, SLOT(areaInfoFill(QNetworkReply *))); //关联信号和槽
 
     //拼接url
-    QString url = "http://106.75.36.193:82/original_server/common/areaVersion?area=" + area;
+    QString url = "http://" + main_server_ip + "/original_server/common/areaVersion?area=" + area;
 
     n_manager->get(QNetworkRequest(QUrl(url)));//发送请求
 
@@ -131,7 +137,7 @@ void ui::clickVersionChange()
     connect(n_manager, SIGNAL(finished(QNetworkReply *)), this, SLOT(changeVersion(QNetworkReply *))); //关联信号和槽
 
     //拼接url
-    QString url = "http://106.75.36.193:82/original_server/common/areaVersionChange?version=" + version + "&area=" + area;
+    QString url = "http://" + main_server_ip + "/original_server/common/areaVersionChange?version=" + version + "&area=" + area;
 
     n_manager->get(QNetworkRequest(QUrl(url)));//发送请求
 
@@ -186,7 +192,7 @@ void ui::uploadFile()
     connect(n_manager, SIGNAL(finished(QNetworkReply *)), this, SLOT(uploadFileResult(QNetworkReply *))); //关联信号和槽
 
     //拼接url
-    QString url = "http://106.75.36.193:82/original_server/common/uploadUpdateResource?version=" + version + "&area=" + area + "&path=" + path+ "&size=" + size + "&md5=" + md5+ "&url=" + s_url;
+    QString url = "http://" + main_server_ip + "/original_server/common/uploadUpdateResource?version=" + version + "&area=" + area + "&path=" + path+ "&size=" + size + "&md5=" + md5+ "&url=" + s_url;
 
     n_manager->get(QNetworkRequest(QUrl(url)));//发送请求
 }
@@ -215,7 +221,7 @@ void ui::searchVersionResource(){
     connect(n_manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(appearVersionResource(QNetworkReply *)));
 
     //拼接URL
-    QString url = "http://106.75.36.193:82/original_server/common/versionResourceSearch?version=" + version + "&area=" + area;
+    QString url = "http://" + main_server_ip + "/original_server/common/versionResourceSearch?version=" + version + "&area=" + area;
 
     n_manager->get(QNetworkRequest(QUrl(url)));
 }
@@ -286,4 +292,19 @@ void ui::userOperate() {
     user *u = new user(this);
 
     u->show();
+}
+
+//打开生成机器人的界面
+void ui::createRobot() {
+    robot *r = new robot(this);
+
+    r->show();
+}
+
+
+//打开生成cdkey的界面
+void ui::createCdkey() {
+    cdkey *c = new cdkey(this);
+
+    c->show();
 }
