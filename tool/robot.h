@@ -6,12 +6,23 @@
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QTextBrowser>
+#include <QCheckBox>
 
 #include "ui.h"
+
+typedef struct serverDetail2{
+    QString server_num;
+    QString server_name;
+    QString server_address;
+}sf;
 
 class robot:public QMainWindow {
     public:
         QString server_area;   //渠道组
+
+        QString main_server_ip;
+
+        QMap <QString, sf> serverMap;
 
         int create_num; //创造的机器人的数量
 
@@ -25,11 +36,15 @@ class robot:public QMainWindow {
         QMap <QString, int> helmets;    //头盔的集合
         QMap <QString, int> armors;     //装甲的集合
     private:
+        QNetworkAccessManager *r_manager;
+
         void refreshMonsters();
         void refreshWeapons();
         void refreshHelmets();
         void refreshArmors();
 
+        QString makeRand(QStringList stringList);
+        QString makeRand(QMap <QString, int> map);
     Q_OBJECT
     public:
         robot(ui *ui, QWidget *parent = Q_NULLPTR);
@@ -72,6 +87,8 @@ class robot:public QMainWindow {
         QLabel *user_armor_add_label = new QLabel("添加装甲");
         QLabel *user_pvp_label = new QLabel("pvp信息");
         QLabel *user_pvp_score_label = new QLabel("pvp分数");
+        QLabel *user_season_label = new QLabel("是否为赛季");
+        QLabel *user_season_num_label = new QLabel("赛季编号");
 
         //输入框
         QLineEdit *create_robot_num_line = new QLineEdit();
@@ -91,12 +108,17 @@ class robot:public QMainWindow {
         QLineEdit *user_armor_weight_line = new QLineEdit("权重");
         QLineEdit *user_pvp_score_min_line = new QLineEdit("最低分");
         QLineEdit *user_pvp_score_max_line = new QLineEdit("最高分");
+        QLineEdit *user_season_num_line = new QLineEdit();
 
         //下拉框
+        QComboBox *server_num_box = new QComboBox(this);
         QComboBox *first_name_box = new QComboBox(this);
         QComboBox *middle_name_box = new QComboBox(this);
         QComboBox *last_name_box = new QComboBox(this);
         QComboBox *portrait_box = new QComboBox(this);
+
+        //打勾的选项
+        QCheckBox *season_checkbox = new QCheckBox(this);
 
         //button
         QPushButton *user_monster_add_button = new QPushButton("增加");
@@ -109,6 +131,9 @@ class robot:public QMainWindow {
         //文本输出
         QTextBrowser *create_log_browser = new QTextBrowser;
     private Q_SLOTS:
+        void setServerInfo(QNetworkReply *reply);
+        QString getAddressByServerNum(QString server_num);
+
         void addMonster();
         void addWeapon();
         void addHelmet();
@@ -116,6 +141,7 @@ class robot:public QMainWindow {
 
         void beginCreate();
         void continueCreate();
+        void resultAppear(QNetworkReply *reply);
         void endCreate();
 };
 

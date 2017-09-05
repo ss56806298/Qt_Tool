@@ -4,14 +4,14 @@ user::user(ui *ui, QWidget *parent)
 //    : QMainWindow(parent)
 {
     server_area = ui->area_box->currentText();
-
+    QString main_server_ip = ui->main_server_ip;
     setWindowTitle(server_area);
 
     //获取现在有哪些渠道组
     n_manager = new QNetworkAccessManager(this);
     connect(n_manager, SIGNAL(finished(QNetworkReply *)), this, SLOT(setServerInfo(QNetworkReply *))); //关联信号和槽
 
-    QUrl url = "http://106.75.36.193:82/original_server/common/serverSearch?area=" + server_area;
+    QUrl url = "http://" + main_server_ip + "/original_server/common/serverSearch?area=" + server_area;
 
     n_manager->get(QNetworkRequest(url));//发送请求
 

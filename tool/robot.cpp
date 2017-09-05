@@ -1,9 +1,19 @@
-#include "robot.h"
+﻿#include "robot.h"
 
 robot::robot(ui *ui, QWidget *parent) {
     server_area = ui->area_box->currentText();
 
     setWindowTitle(server_area);
+
+    main_server_ip = ui->main_server_ip;
+
+    //获取现在有哪些渠道组
+    r_manager = new QNetworkAccessManager(this);
+    connect(r_manager, SIGNAL(finished(QNetworkReply *)), this, SLOT(setServerInfo(QNetworkReply *))); //关联信号和槽
+
+    QUrl url = "http://" + main_server_ip + "/original_server/common/serverSearch?area=" + server_area;
+
+    r_manager->get(QNetworkRequest(url));//发送请求
 
     //昵称的默认值
     first_name << "无助的" << "圣光的" << "腐化的" << "强大的"<<"神圣的"<<"惋惜的"<<"危险的"<<"优雅的"<<"无言的"<<"蔼然的";
@@ -14,8 +24,9 @@ robot::robot(ui *ui, QWidget *parent) {
     //布局
     //人物信息
     int i = 0;
-    menu_layout->addWidget(create_robot_num_label, i, 0, 1, 1);
-    menu_layout->addWidget(create_robot_num_line, i, 1, 1, 1);
+    menu_layout->addWidget(server_num_box, i, 0, 1, 1);
+    menu_layout->addWidget(create_robot_num_label, i, 1, 1, 1);
+    menu_layout->addWidget(create_robot_num_line, i, 2, 1, 1);
     i++;
     menu_layout->addWidget(game_master_label, i, 0, 1, 4, Qt::AlignHCenter);
     i++;
@@ -95,6 +106,13 @@ robot::robot(ui *ui, QWidget *parent) {
     menu_layout->addWidget(user_pvp_score_min_line, i, 1, 1, 1);
     menu_layout->addWidget(user_pvp_score_max_line, i, 2, 1, 1);
 
+    //season信息
+    i++;
+    menu_layout->addWidget(user_season_label, i, 0, 1, 1);
+    menu_layout->addWidget(season_checkbox, i, 1, 1, 1);
+    menu_layout->addWidget(user_season_num_label, i, 2, 1, 1);
+    menu_layout->addWidget(user_season_num_line, i, 3, 1, 1);
+
     //英雄布局
     monsterWidget->setColumnCount(2);
     monsterWidget->setRowCount(30);
@@ -141,11 +159,14 @@ robot::robot(ui *ui, QWidget *parent) {
 
     centralWidget->setLayout(layout);
     setCentralWidget(centralWidget);
+
+    //信号
+    connect(create_robot_button, &QPushButton::clicked, this, &robot::beginCreate);
 }
 
 //增加生成的英雄的种类
 void robot::addMonster() {
-    QString monster_id = user_monster_id_line->text();
+    QString monster_id = user_monster_id_line->text().trimmed();
     int weight = user_monster_weight_line->text().toInt();
 
     monsters[monster_id] = weight;
@@ -169,7 +190,7 @@ void robot::refreshMonsters() {
 
 //增加生成的武器的种类
 void robot::addWeapon() {
-    QString weapon_id = user_weapon_id_line->text();
+    QString weapon_id = user_weapon_id_line->text().trimmed();
     int weight = user_weapon_weight_line->text().toInt();
 
     weapons[weapon_id] = weight;
@@ -193,7 +214,7 @@ void robot::refreshWeapons() {
 
 //增加生成的头盔的种类
 void robot::addHelmet() {
-    QString helmet_id = user_helmet_id_line->text();
+    QString helmet_id = user_helmet_id_line->text().trimmed();
     int weight = user_helmet_weight_line->text().toInt();
 
     helmets[helmet_id] = weight;
@@ -217,7 +238,7 @@ void robot::refreshHelmets() {
 
 //增加生成的装甲的种类
 void robot::addArmor() {
-    QString armor_id = user_armor_id_line->text();
+    QString armor_id = user_armor_id_line->text().trimmed();
     int weight = user_armor_weight_line->text().toInt();
 
     armors[armor_id] = weight;
@@ -244,9 +265,246 @@ void robot::beginCreate() {
     QString num = create_robot_num_line->text();
     create_num = num.toInt();
 
+    create_robot_num_line->setEnabled(false);
+    game_master_exp_min_line->setEnabled(false);
+    game_master_exp_max_line->setEnabled(false);
+    game_master_gender_male_line->setEnabled(false);
+    game_master_gender_female_line->setEnabled(false);
+    user_monster_id_line->setEnabled(false);
+    user_monster_weight_line->setEnabled(false);
+    user_monster_num_min_line->setEnabled(false);
+    user_monster_num_max_line->setEnabled(false);
+    user_weapon_id_line->setEnabled(false);
+    user_weapon_weight_line->setEnabled(false);
+    user_helmet_id_line->setEnabled(false);
+    user_helmet_weight_line->setEnabled(false);
+    user_armor_id_line->setEnabled(false);
+    user_armor_weight_line->setEnabled(false);
+    user_pvp_score_min_line->setEnabled(false);
+    user_pvp_score_max_line->setEnabled(false);
+    season_checkbox->setEnabled(false);
+    user_season_num_line->setEnabled(false);
+
+    user_monster_add_button->setEnabled(false);
+    user_weapon_add_button->setEnabled(false);
+    user_helmet_add_button->setEnabled(false);
+    user_armor_add_button->setEnabled(false);
+
     continueCreate();
 }
 
+//继续生成
 void robot::continueCreate() {
+    QString first = makeRand(first_name);
+    QString middle = makeRand(middle_name);
+    QString last = makeRand(last_name);
+    QString name = first + middle + last;
 
+    QString weapon = makeRand(weapons);
+    QString helmet = makeRand(helmets);
+    QString armor = makeRand(armors);
+    QString portrait_id = makeRand(portrait);
+
+    int expMin = game_master_exp_min_line->text().toInt();
+    int expMax = game_master_exp_max_line->text().toInt();
+
+    QString exp = QString::number(expMin+rand()%(expMax-expMin+1), 10);
+
+    int maleWeight = game_master_gender_male_line->text().toInt();
+    int femaleWeight = game_master_gender_female_line->text().toInt();
+    QMap <QString, int> genderMap;
+    genderMap["1"] = maleWeight;
+    genderMap["2"] = femaleWeight;
+    QString gender = makeRand(genderMap);
+
+    int scoreMax = user_pvp_score_max_line->text().toInt();
+    int scoreMin = user_pvp_score_min_line->text().toInt();
+    int pvpScore = scoreMin + rand() % (scoreMax - scoreMin + 1);
+
+    int monsterMin = user_monster_num_min_line->text().toInt();
+    int monsterMax = user_monster_num_max_line->text().toInt();
+    int monsterNum = monsterMin + rand() % (monsterMax - monsterMin + 1);
+    QStringList monsterList;
+    do {
+        QString monsterId = makeRand(monsters);
+        if (!monsterList.contains(monsterId)) {
+            monsterList << monsterId;
+        }
+    } while (monsterList.size() < monsterNum);
+
+    QJsonDocument jsonDocument = QJsonDocument::fromVariant(monsterList);
+
+    QString monster_json = jsonDocument.toJson(QJsonDocument::Compact);
+
+    r_manager = new QNetworkAccessManager(this);
+
+    QString server_num_string = server_num_box->currentText();
+
+    //获取游戏服务器的地址
+    QString server_address = getAddressByServerNum(server_num_string);
+
+    connect(r_manager, &QNetworkAccessManager::finished, this, &robot::resultAppear);
+
+    QByteArray postData;
+
+    QUrl url;
+    //PVP还是赛季？
+    if (season_checkbox->checkState() == Qt::Checked) {
+        QString season_no = user_season_num_line->text();
+
+        postData.append("nickname=" + name);
+        postData.append("&weapon=" + weapon);
+        postData.append("&helmet=" + helmet);
+        postData.append("&armor=" + armor);
+        postData.append("&portrait_id=" + portrait_id);
+        postData.append("&exp=" + exp);
+        postData.append("&gender=" + gender);
+        postData.append("&season_score=" + QString::number(pvpScore, 10));
+        postData.append("&monsters=" + monster_json);
+        postData.append("&season_no=" + season_no);
+
+        url = "http://" + server_address + "/The_Wall/common/createSeasonRobot";
+    } else {
+        postData.append("nickname=" + name);
+        postData.append("&weapon=" + weapon);
+        postData.append("&helmet=" + helmet);
+        postData.append("&armor=" + armor);
+        postData.append("&portrait_id=" + portrait_id);
+        postData.append("&exp=" + exp);
+        postData.append("&gender=" + gender);
+        postData.append("&pvp_score=" + QString::number(pvpScore, 10));
+        postData.append("&monsters=" + monster_json);
+
+        url = "http://" + server_address + "/The_Wall/common/createPvpRobot";
+    }
+
+    QNetworkRequest request;
+    request.setUrl(url);
+    request.setRawHeader("Content-Type","application/x-www-form-urlencoded");
+
+    r_manager->post(request, postData);
+}
+
+//结果显示
+void robot::resultAppear(QNetworkReply *reply) {
+    create_num--;
+
+    if(reply->error() == QNetworkReply::NoError){
+        QString result = QString(reply->readAll());
+
+        if (result == "success") {
+           create_log_browser->append("创建成功,剩余" + QString::number(create_num, 10) + "个");
+        } else {
+           create_log_browser->append("创建失败," + result + ",剩余" + QString::number(create_num, 10) + "个");
+        }
+
+        r_manager->clearConnectionCache();
+        r_manager->clearAccessCache();
+
+    } else {
+        create_log_browser->append("创建失败,网络异常,剩余" + QString::number(create_num, 10) + "个");
+    }
+
+    if (create_num <= 0) {
+        endCreate();
+    } else {
+        continueCreate();
+    }
+}
+
+//生成结束
+void robot::endCreate() {
+    create_robot_num_line->setEnabled(true);
+    game_master_exp_min_line->setEnabled(true);
+    game_master_exp_max_line->setEnabled(true);
+    game_master_gender_male_line->setEnabled(true);
+    game_master_gender_female_line->setEnabled(true);
+    user_monster_id_line->setEnabled(true);
+    user_monster_weight_line->setEnabled(true);
+    user_monster_num_min_line->setEnabled(true);
+    user_monster_num_max_line->setEnabled(true);
+    user_weapon_id_line->setEnabled(true);
+    user_weapon_weight_line->setEnabled(true);
+    user_helmet_id_line->setEnabled(true);
+    user_helmet_weight_line->setEnabled(true);
+    user_armor_id_line->setEnabled(true);
+    user_armor_weight_line->setEnabled(true);
+    user_pvp_score_min_line->setEnabled(true);
+    user_pvp_score_max_line->setEnabled(true);
+    season_checkbox->setEnabled(true);
+    user_season_num_line->setEnabled(true);
+
+    user_monster_add_button->setEnabled(true);
+    user_weapon_add_button->setEnabled(true);
+    user_helmet_add_button->setEnabled(true);
+    user_armor_add_button->setEnabled(true);
+}
+
+//随机生成
+QString robot::makeRand(QStringList stringList) {
+    int len;
+    len = stringList.length();
+
+    int r = rand()%len;
+
+    QString string = stringList.at(r);
+
+    return string;
+}
+
+QString robot::makeRand(QMap <QString, int> map) {
+    QMap <QString, int>::iterator i;
+    int sumWeight = 0;
+    for (i=map.begin();i!=map.end();i++) {
+        sumWeight += i.value();
+    }
+
+    int r;
+    r = rand()%sumWeight;
+    int nowWeight = 0;
+    QString key;
+
+    key = "";
+    for (i=map.begin();i!=map.end();i++) {
+        nowWeight += i.value();
+        if (nowWeight > r) {
+            key = i.key();
+            return key;
+        }
+    }
+    return key;
+}
+
+//确定服务器的信息
+void robot::setServerInfo(QNetworkReply *reply) {
+    //处理返回的JSON数据
+    QJsonParseError error;
+
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(reply->readAll(), &error);
+    if (error.error == QJsonParseError::NoError) {
+        if (jsonDocument.isObject()) {
+            QVariantMap result = jsonDocument.toVariant().toMap();
+
+            foreach(QVariant serverListT, result["server_list"].toList()) {
+                QVariantMap serverList = serverListT.toMap();
+                sf sd1;
+                sd1.server_num = serverList["server_num"].toString();
+                sd1.server_name = serverList["server_name"].toString();
+                sd1.server_address = serverList["server_address"].toString();
+                serverMap[serverList["server_num"].toString()] = sd1;
+
+                server_num_box->addItem(sd1.server_num);
+            }
+
+        }
+    } else {
+        qDebug()<<error.errorString();
+    }
+
+    reply->deleteLater();//最后要释放replay对象
+}
+
+//根据服务器的编号获取服务器的address
+QString robot::getAddressByServerNum(QString server_num) {
+    return serverMap[server_num].server_address;
 }
