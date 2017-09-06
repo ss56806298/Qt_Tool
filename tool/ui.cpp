@@ -1,7 +1,8 @@
-#include "ui.h"
+﻿#include "ui.h"
 #include "user.h"
 #include "robot.h"
 #include "cdkey.h"
+#include "season.h"
 
 ui::ui(QWidget *parent)
     : QMainWindow(parent)
@@ -14,41 +15,47 @@ ui::ui(QWidget *parent)
     n_manager->get(QNetworkRequest(QUrl("http://" + main_server_ip + "/original_server/common/areaSearch")));//发送请求
 
     //布局
-    layout->addWidget(area_box, 0, 0, 1, 1);
-    layout->addWidget(search_button, 0, 1, 1, 1);
-    layout->addWidget(user_operate_button, 0, 2, 1, 1);
-    layout->addWidget(robot_create_button, 0, 3, 1, 1);
-    layout->addWidget(cdkey_create_button, 0, 4, 1, 1);
-
-    layout->addWidget(area_name_label, 1, 0, 1, 1);
-    layout->addWidget(area_name_content_label, 1, 1, 1, 1);
-    layout->addWidget(area_version_label, 2, 0, 1, 1);
-    layout->addWidget(area_version_content_line, 2, 1, 1, 1);
-    layout->addWidget(area_version_button, 2, 2, 1, 1);
-    layout->addWidget(area_version_change_label, 2 ,3 , 1, 1);
-    layout->addWidget(area_servers_label, 3, 0, 1, 1);
-    layout->addWidget(area_servers_content_label, 3, 1, 1, 1);
-//    layout->addWidget(upload_num_box, 4, 0, 1, 1);
-    layout->addWidget(open_file_button, 4, 0, 1, 1);
-
-    layout->addWidget(file_path_label, 5, 0, 1, 1);
-    layout->addWidget(file_path_line, 5, 1, 1, 1);
-
-    layout->addWidget(file_size_label, 6, 0, 1, 1);
-    layout->addWidget(file_size_content_label, 6, 1, 1, 1);
-
-    layout->addWidget(file_md5_label, 7, 0, 1, 1);
-    layout->addWidget(file_md5_content_label, 7, 1, 1, 1);
-
-    layout->addWidget(file_version_label, 8, 0, 1, 1);
-    layout->addWidget(file_version_line, 8, 1, 1, 1);
-    layout->addWidget(search_version_button, 8, 2, 1, 1);
-
-    layout->addWidget(file_url_label, 9, 0, 1, 1);
-    layout->addWidget(file_url_line, 9, 1, 1, 1);
-
-    layout->addWidget(upload_update_resource_button, 10, 0, 1, 1);
-    layout->addWidget(upload_update_resource_result_label, 10, 1, 1, 1);
+    int i = 0;
+    layout->addWidget(area_box, i, 0, 1, 1);
+    layout->addWidget(search_button, i, 1, 1, 1);
+    i++;
+    layout->addWidget(user_operate_button, i, 0, 1, 1);
+    layout->addWidget(robot_create_button, i, 1, 1, 1);
+    layout->addWidget(cdkey_create_button, i, 2, 1, 1);
+    layout->addWidget(season_cal_button, i, 3, 1, 1);
+    i++;
+    layout->addWidget(area_name_label, i, 0, 1, 1);
+    layout->addWidget(area_name_content_label, i, 1, 1, 1);
+    i++;
+    layout->addWidget(area_version_label, i, 0, 1, 1);
+    layout->addWidget(area_version_content_line, i, 1, 1, 1);
+    layout->addWidget(area_version_button, i, 2, 1, 1);
+    layout->addWidget(area_version_change_label, i ,3 , 1, 1);
+    i++;
+    layout->addWidget(area_servers_label, i, 0, 1, 1);
+    layout->addWidget(area_servers_content_label, i, 1, 1, 1);
+    i++;
+//    layout->addWidget(upload_num_box, i, 0, 1, 1);
+    layout->addWidget(open_file_button, i, 0, 1, 1);
+    i++;
+    layout->addWidget(file_path_label, i, 0, 1, 1);
+    layout->addWidget(file_path_line, i, 1, 1, 1);
+    i++;
+    layout->addWidget(file_size_label, i, 0, 1, 1);
+    layout->addWidget(file_size_content_label, i, 1, 1, 1);
+    i++;
+    layout->addWidget(file_md5_label, i, 0, 1, 1);
+    layout->addWidget(file_md5_content_label, i, 1, 1, 1);
+    i++;
+    layout->addWidget(file_version_label, i, 0, 1, 1);
+    layout->addWidget(file_version_line, i, 1, 1, 1);
+    layout->addWidget(search_version_button, i, 2, 1, 1);
+    i++;
+    layout->addWidget(file_url_label, i, 0, 1, 1);
+    layout->addWidget(file_url_line, i, 1, 1, 1);
+    i++;
+    layout->addWidget(upload_update_resource_button, i, 0, 1, 1);
+    layout->addWidget(upload_update_resource_result_label, i, 1, 1, 1);
 
     widget->setLayout(layout);
 
@@ -63,6 +70,7 @@ ui::ui(QWidget *parent)
     connect(user_operate_button, &QPushButton::clicked, this, &ui::userOperate);
     connect(robot_create_button, &QPushButton::clicked, this, &ui::createRobot);
     connect(cdkey_create_button, &QPushButton::clicked, this, &ui::createCdkey);
+    connect(season_cal_button, &QPushButton::clicked, this, &ui::seasonCal);
 }
 
 //获取渠道组信息并填充
@@ -307,4 +315,11 @@ void ui::createCdkey() {
     cdkey *c = new cdkey(this);
 
     c->show();
+}
+
+//打开结算赛季的界面
+void ui::seasonCal() {
+    season *s = new season(this);
+
+    s->show();
 }

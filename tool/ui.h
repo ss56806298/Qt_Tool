@@ -1,4 +1,4 @@
-#ifndef UI_H
+﻿#ifndef UI_H
 #define UI_H
 
 #include <QWidget>
@@ -40,6 +40,7 @@ class ui : public QMainWindow
         QPushButton *user_operate_button = new QPushButton("用户操作");
         QPushButton *robot_create_button = new QPushButton("生成机器人");
         QPushButton *cdkey_create_button = new QPushButton("生成cdkey");
+        QPushButton *season_cal_button = new QPushButton("结算赛季");
         //标签
         QLabel *area_name_label = new QLabel("渠道组");
         QLabel *area_name_content_label = new QLabel();
@@ -82,6 +83,7 @@ class ui : public QMainWindow
         void userOperate();
         void createRobot();
         void createCdkey();
+        void seasonCal();
 
     private:
         QNetworkAccessManager *n_manager;
