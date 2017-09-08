@@ -24,6 +24,12 @@
 #include <QTextCodec>
 #include <QString>
 
+typedef struct serverDetail{
+    QString server_num;
+    QString server_name;
+    QString server_address;
+}sd;
+
 class ui : public QMainWindow
 {
     public:
@@ -41,6 +47,7 @@ class ui : public QMainWindow
         QPushButton *robot_create_button = new QPushButton("生成机器人");
         QPushButton *cdkey_create_button = new QPushButton("生成cdkey");
         QPushButton *season_cal_button = new QPushButton("结算赛季");
+        QPushButton *csv_upload_button = new QPushButton("上传csv");
         //标签
         QLabel *area_name_label = new QLabel("渠道组");
         QLabel *area_name_content_label = new QLabel();
@@ -84,6 +91,7 @@ class ui : public QMainWindow
         void createRobot();
         void createCdkey();
         void seasonCal();
+        void uploadCsv();
 
     private:
         QNetworkAccessManager *n_manager;

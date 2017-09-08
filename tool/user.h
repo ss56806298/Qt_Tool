@@ -1,4 +1,4 @@
-#ifndef USER_H
+﻿#ifndef USER_H
 #define USER_H
 
 #include <QWidget>
@@ -14,12 +14,6 @@
 #include <QVariantMap>
 
 #include "ui.h"
-
-typedef struct serverDetail{
-    QString server_num;
-    QString server_name;
-    QString server_address;
-}sd;
 
 class user : public QMainWindow
 {
