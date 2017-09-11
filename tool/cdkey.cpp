@@ -1,4 +1,4 @@
-#include "cdkey.h"
+﻿#include "cdkey.h"
 
 #include <QMessageBox>
 

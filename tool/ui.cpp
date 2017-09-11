@@ -4,6 +4,7 @@
 #include "cdkey.h"
 #include "season.h"
 #include "csv.h"
+#include "mail.h"
 
 ui::ui(QWidget *parent)
     : QMainWindow(parent)
@@ -26,6 +27,7 @@ ui::ui(QWidget *parent)
     layout->addWidget(season_cal_button, i, 3, 1, 1);
     i++;
     layout->addWidget(csv_upload_button, i, 0, 1, 1);
+    layout->addWidget(send_mail_button, i, 1, 1, 1);
     i++;
     layout->addWidget(area_name_label, i, 0, 1, 1);
     layout->addWidget(area_name_content_label, i, 1, 1, 1);
@@ -75,6 +77,7 @@ ui::ui(QWidget *parent)
     connect(cdkey_create_button, &QPushButton::clicked, this, &ui::createCdkey);
     connect(season_cal_button, &QPushButton::clicked, this, &ui::seasonCal);
     connect(csv_upload_button, &QPushButton::clicked, this, &ui::uploadCsv);
+    connect(send_mail_button, &QPushButton::clicked, this, &ui::sendMail);
 }
 
 //获取渠道组信息并填充
@@ -333,4 +336,11 @@ void ui::uploadCsv() {
     csv *c = new csv(this);
 
     c->show();
+}
+
+//打开发送邮件的界面
+void ui::sendMail() {
+    mail *m = new mail(this);
+
+    m->show();
 }
