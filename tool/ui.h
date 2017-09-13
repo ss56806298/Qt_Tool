@@ -34,7 +34,7 @@ class ui : public QMainWindow
 {
     public:
         QString main_server_ip = "taptap.yxlc.shadowpower.cn";
-        //QString main_server_ip = "yxlc.shadowpower.cn:82";
+//        QString main_server_ip = "yxlc.shadowpower.cn:82";
     Q_OBJECT
     public:
         ui(QWidget *parent = Q_NULLPTR);
@@ -50,6 +50,7 @@ class ui : public QMainWindow
         QPushButton *season_cal_button = new QPushButton("结算赛季");
         QPushButton *csv_upload_button = new QPushButton("上传csv");
         QPushButton *send_mail_button = new QPushButton("发送邮件");
+        QPushButton *data_modify_button = new QPushButton("资料修改");
         //标签
         QLabel *area_name_label = new QLabel("渠道组");
         QLabel *area_name_content_label = new QLabel();
@@ -95,6 +96,7 @@ class ui : public QMainWindow
         void seasonCal();
         void uploadCsv();
         void sendMail();
+        void dataModify();
 
     private:
         QNetworkAccessManager *n_manager;

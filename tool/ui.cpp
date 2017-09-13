@@ -5,6 +5,7 @@
 #include "season.h"
 #include "csv.h"
 #include "mail.h"
+#include "datam.h"
 
 ui::ui(QWidget *parent)
     : QMainWindow(parent)
@@ -28,6 +29,7 @@ ui::ui(QWidget *parent)
     i++;
     layout->addWidget(csv_upload_button, i, 0, 1, 1);
     layout->addWidget(send_mail_button, i, 1, 1, 1);
+    layout->addWidget(data_modify_button, i, 2, 1, 1);
     i++;
     layout->addWidget(area_name_label, i, 0, 1, 1);
     layout->addWidget(area_name_content_label, i, 1, 1, 1);
@@ -78,6 +80,7 @@ ui::ui(QWidget *parent)
     connect(season_cal_button, &QPushButton::clicked, this, &ui::seasonCal);
     connect(csv_upload_button, &QPushButton::clicked, this, &ui::uploadCsv);
     connect(send_mail_button, &QPushButton::clicked, this, &ui::sendMail);
+    connect(data_modify_button, &QPushButton::clicked, this, &ui::dataModify);
 }
 
 //获取渠道组信息并填充
@@ -343,4 +346,11 @@ void ui::sendMail() {
     mail *m = new mail(this);
 
     m->show();
+}
+
+//打开资料修改的界面
+void ui::dataModify() {
+    datam *d = new datam(this);
+
+    d->show();
 }
