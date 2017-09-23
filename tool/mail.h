@@ -35,12 +35,13 @@ class mail: public QMainWindow {
         QWidget *widget = new QWidget;
 
         //label
-        QLabel *mail_title_label = new QLabel("邮件ID");
+        QLabel *mail_title_label = new QLabel("邮件标题");
         QLabel *mail_message_label = new QLabel("邮件正文");
         QLabel *mail_sender_label = new QLabel("邮件署名");
         QLabel *expiry_date_label = new QLabel("有效期(天)");
         QLabel *reward_id_label = new QLabel("奖励");
         QLabel *reward_num_label = new QLabel("数量");
+        QLabel *mail_send_ids_label = new QLabel("收件人为玩家id,多个ID间以,分割(英文的逗号),全服发送可以不填");
 
         //富文本
         QTextBrowser *send_result_browser = new QTextBrowser();
@@ -50,6 +51,7 @@ class mail: public QMainWindow {
         QTextEdit *mail_message_line = new QTextEdit();
         QLineEdit *mail_sender_line = new QLineEdit();
         QLineEdit *expiry_date_line = new QLineEdit();
+        QTextEdit *mail_send_ids_line = new QTextEdit();
 
         //button
         QPushButton *send_by_account_button = new QPushButton("按账号发送");
@@ -66,6 +68,7 @@ class mail: public QMainWindow {
         QString getAddressByServerNum(QString server_num);
 
         void sendToAll();
+        void sendByUserid();
 };
 
 #endif // MAIL_H

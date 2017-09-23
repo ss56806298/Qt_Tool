@@ -51,6 +51,10 @@ class ui : public QMainWindow
         QPushButton *csv_upload_button = new QPushButton("上传csv");
         QPushButton *send_mail_button = new QPushButton("发送邮件");
         QPushButton *data_modify_button = new QPushButton("资料修改");
+        QPushButton *hot_update_button = new QPushButton("热更新");
+        QPushButton *people_num_button = new QPushButton("玩家人数");
+        QPushButton *legend_dungeon_button = new QPushButton("降临结算");
+
         //标签
         QLabel *area_name_label = new QLabel("渠道组");
         QLabel *area_name_content_label = new QLabel();
@@ -97,6 +101,9 @@ class ui : public QMainWindow
         void uploadCsv();
         void sendMail();
         void dataModify();
+        void hotUpdate();
+        void peopleNum();
+        void legendDungeon();
 
     private:
         QNetworkAccessManager *n_manager;

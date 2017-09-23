@@ -6,6 +6,9 @@
 #include "csv.h"
 #include "mail.h"
 #include "datam.h"
+#include "hupdate.h"
+#include "people_num.h"
+#include "ldungeon.h"
 
 ui::ui(QWidget *parent)
     : QMainWindow(parent)
@@ -30,6 +33,10 @@ ui::ui(QWidget *parent)
     layout->addWidget(csv_upload_button, i, 0, 1, 1);
     layout->addWidget(send_mail_button, i, 1, 1, 1);
     layout->addWidget(data_modify_button, i, 2, 1, 1);
+    layout->addWidget(hot_update_button, i, 3, 1, 1);
+    i++;
+    layout->addWidget(people_num_button, i, 0, 1, 1);
+    layout->addWidget(legend_dungeon_button, i, 1, 1, 1);
     i++;
     layout->addWidget(area_name_label, i, 0, 1, 1);
     layout->addWidget(area_name_content_label, i, 1, 1, 1);
@@ -68,6 +75,17 @@ ui::ui(QWidget *parent)
 
     setCentralWidget(widget);
 
+    //给草花用
+//    robot_create_button->setEnabled(false);
+//    cdkey_create_button->setEnabled(false);
+//    season_cal_button->setEnabled(false);
+//    csv_upload_button->setEnabled(false);
+//    hot_update_button->setEnabled(false);
+//    people_num_button->setEnabled(false);
+//    upload_update_resource_button->setEnabled(false);
+//    area_version_button->setEnabled(false);
+
+
     //信号
     connect(search_button, &QPushButton::clicked, this, &ui::clickAreaSearch);
     connect(area_version_button, &QPushButton::clicked, this, &ui::clickVersionChange);
@@ -81,6 +99,9 @@ ui::ui(QWidget *parent)
     connect(csv_upload_button, &QPushButton::clicked, this, &ui::uploadCsv);
     connect(send_mail_button, &QPushButton::clicked, this, &ui::sendMail);
     connect(data_modify_button, &QPushButton::clicked, this, &ui::dataModify);
+    connect(hot_update_button, &QPushButton::clicked, this, &ui::hotUpdate);
+    connect(people_num_button, &QPushButton::clicked, this, &ui::peopleNum);
+    connect(legend_dungeon_button, &QPushButton::clicked, this, &ui::legendDungeon);
 }
 
 //获取渠道组信息并填充
@@ -98,7 +119,10 @@ void ui::areaFill(QNetworkReply *reply)
             QVariantMap result = jsonDocument.toVariant().toMap();
 
             foreach (QVariant area_name, result["area_name"].toList()) {
-                area_box->addItem(area_name.toString());
+//                if (area_name.toString() == "Check") {
+                     area_box->addItem(area_name.toString());
+//                }
+
             }
         }
     } else {
@@ -353,4 +377,25 @@ void ui::dataModify() {
     datam *d = new datam(this);
 
     d->show();
+}
+
+//打开热更新的界面
+void ui::hotUpdate() {
+    hupdate *u = new hupdate(this);
+
+    u->show();
+}
+
+//打开查看人数的界面
+void ui::peopleNum() {
+//    people_num *p = new people_num(this);
+
+//    u->show();
+}
+
+//打开降临副本结算的界面
+void ui::legendDungeon() {
+    ldungeon *l = new ldungeon(this);
+
+    l->show();
 }

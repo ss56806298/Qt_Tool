@@ -46,10 +46,12 @@ mail::mail(ui *ui, QWidget *parent) {
         left_layout->addWidget(k->id, i, 0, 1, 1);
         left_layout->addWidget(k->num, i, 1, 1, 1);
     }
-
     i++;
-    left_layout->addWidget(send_by_account_button, i, 0, 1, 1);
-    left_layout->addWidget(send_by_userid_button, i, 1, 1, 1);
+    left_layout->addWidget(mail_send_ids_label, i, 0, 1, 2);
+    i++;
+    left_layout->addWidget(mail_send_ids_line, i, 0, 1, 2);
+    i++;
+    left_layout->addWidget(send_by_userid_button, i, 1, 1, 2);
     i++;
     left_layout->addWidget(limit_flag_box, i, 0, 1, 2);
     i++;
@@ -65,8 +67,10 @@ mail::mail(ui *ui, QWidget *parent) {
     setCentralWidget(widget);
 
     connect(send_to_all_button, &QPushButton::clicked, this, &mail::sendToAll);
+    connect(send_by_userid_button, &QPushButton::clicked, this, &mail::sendByUserid);
 }
 
+//发送给所有玩家
 void mail::sendToAll() {
     QString server_num = server_num_box->currentText();
 
@@ -136,6 +140,109 @@ void mail::sendToAll() {
     postData.append("&expiry_date=" + expiry_date);
     postData.append("&rewards=" + rewards_json);
     postData.append("&limit_flag=" + limit_flag);
+
+    request.setRawHeader("Content-Type","application/x-www-form-urlencoded");
+
+    QNetworkReply *reply;
+
+    reply = m_manager->post(request, postData);
+
+    loop.exec();
+
+    if (reply->error() == QNetworkReply::NoError) {
+        send_result_browser->append(reply->readAll());
+    } else {
+        send_result_browser->append("网络异常,发送失败");
+    }
+
+    m_manager->clearConnectionCache();
+    m_manager->clearAccessCache();
+
+    reply->deleteLater();//最后要释放reply对象
+
+    //将所有的按钮和输入框设为可用
+    server_num_box->setEnabled(true);
+    mail_title_line->setEnabled(true);
+    mail_message_line->setEnabled(true);
+    mail_sender_line->setEnabled(true);
+    expiry_date_line->setEnabled(true);
+    for (k = items_info.begin();k!=items_info.end();k++) {
+        k->id->setEnabled(true);
+        k->num->setEnabled(true);
+    }
+
+    send_by_account_button->setEnabled(true);
+    send_by_userid_button->setEnabled(true);
+    limit_flag_box->setEnabled(true);
+    send_to_all_button->setEnabled(true);
+}
+
+//发送给指定ID的玩家
+void mail::sendByUserid() {
+    QString server_num = server_num_box->currentText();
+
+    QString server_ip = getAddressByServerNum(server_num);
+
+    //将所有的按钮和输入框设为不可用
+    server_num_box->setEnabled(false);
+    mail_title_line->setEnabled(false);
+    mail_message_line->setEnabled(false);
+    mail_sender_line->setEnabled(false);
+    expiry_date_line->setEnabled(false);
+    QList<rw>::iterator k;
+    for (k = items_info.begin();k!=items_info.end();k++) {
+        k->id->setEnabled(false);
+        k->num->setEnabled(false);
+    }
+
+    send_by_account_button->setEnabled(false);
+    send_by_userid_button->setEnabled(false);
+    limit_flag_box->setEnabled(false);
+    send_to_all_button->setEnabled(false);
+
+    //提取内容
+    QString title = mail_title_line->text().trimmed();  //邮件标题
+    QString message = mail_message_line->toPlainText().trimmed();   //邮件正文
+    QString sender = mail_sender_line->text().trimmed();    //发件人
+    QString expiry_date = expiry_date_line->text().trimmed(); //失效期
+    QString user_ids = mail_send_ids_line->toPlainText().trimmed(); //收件的ids
+
+    QVariantList rewards;
+
+    for (k = items_info.begin();k!=items_info.end();k++) {
+        QString id = k->id->text().trimmed();
+        QString num = k->num->text().trimmed();
+        if (id != "" && num != "") {
+            QVariantMap reward;
+            reward.insert("id", id);
+            reward.insert("num", num);
+
+            rewards.append(reward);
+        }
+    }
+
+    QJsonDocument jsonDocument = QJsonDocument::fromVariant(rewards);
+
+    QString rewards_json = jsonDocument.toJson(QJsonDocument::Compact); //奖励内容
+
+    //发送邮件
+    QEventLoop loop;
+
+    m_manager = new QNetworkAccessManager(this);
+
+    connect(m_manager, &QNetworkAccessManager::finished, &loop, &QEventLoop::quit);
+    QNetworkRequest request;
+
+    QUrl url = "http://" + server_ip + "/The_Wall/common/mailSendByUserids";
+    request.setUrl(url);
+
+    QByteArray postData;
+    postData.append("title=" + title);
+    postData.append("&message=" + message);
+    postData.append("&sender=" + sender);
+    postData.append("&expiry_date=" + expiry_date);
+    postData.append("&rewards=" + rewards_json);
+    postData.append("&user_ids=" + user_ids);
 
     request.setRawHeader("Content-Type","application/x-www-form-urlencoded");
 
