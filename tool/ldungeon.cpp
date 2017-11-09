@@ -1,6 +1,6 @@
 ﻿#include "ldungeon.h"
 
-ldungeon::ldungeon(ui *ui, QWidget *parent) {
+ldungeon::ldungeon(Ui *ui, QWidget *parent) {
     server_area = ui->area_box->currentText();
 
     setWindowTitle(server_area);

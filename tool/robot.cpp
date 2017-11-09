@@ -1,6 +1,6 @@
 ﻿#include "robot.h"
 
-robot::robot(ui *ui, QWidget *parent) {
+robot::robot(Ui *ui, QWidget *parent) {
     server_area = ui->area_box->currentText();
 
     setWindowTitle(server_area);

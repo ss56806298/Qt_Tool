@@ -21,7 +21,7 @@ class hupdate: public QMainWindow
         QNetworkAccessManager *h_manager;
     Q_OBJECT
     public:
-        hupdate(ui *ui, QWidget *parent = Q_NULLPTR);
+        hupdate(Ui *ui, QWidget *parent = Q_NULLPTR);
 
         //布局
         QGridLayout *layout = new QGridLayout;
@@ -69,6 +69,7 @@ class hupdate: public QMainWindow
 //        void uploadFilesEnd();
         QString createUploadToken(QString bucket, QString filename);
 
+        void traversalFolder(QString path, QString relative_path);
 };
 
 #endif // UPDATE_H

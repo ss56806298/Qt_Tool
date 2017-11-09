@@ -17,7 +17,7 @@ class ldungeon: public QMainWindow
         QNetworkAccessManager *l_manager;
     Q_OBJECT
     public:
-        ldungeon(ui *ui, QWidget *parent = Q_NULLPTR);
+        ldungeon(Ui *ui, QWidget *parent = Q_NULLPTR);
 
         //布局
         QGridLayout *layout = new QGridLayout();

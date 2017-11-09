@@ -5,7 +5,7 @@
 #include <QEventLoop>
 #include <time.h>
 
-hupdate::hupdate(ui *ui, QWidget *parent) {
+hupdate::hupdate(Ui *ui, QWidget *parent) {
 
     server_area = ui->area_box->currentText();
 
@@ -15,6 +15,7 @@ hupdate::hupdate(ui *ui, QWidget *parent) {
 
     int i = 0;
     layout->addWidget(select_file_button, i, 0, 1, 1);
+    select_file_button->setEnabled(false);
     layout->addWidget(upload_begin_button, i, 1, 1, 1);
     upload_begin_button->setEnabled(false);
     i++;
@@ -74,16 +75,19 @@ void hupdate::selectFile() {
 void hupdate::selectFolder() {
     QString path = QFileDialog::getExistingDirectory(this);
 
+    traversalFolder(path, "");
+
+    showUploadFiles();
+}
+
+//将文件夹下面的文件目录打印出来
+void hupdate::traversalFolder(QString path, QString relative_path) {
     QDir dir(path);
 
     //判断路径是否存在
     if (!dir.exists()) {
         return;
     }
-
-    QStringList filters;
-    filters << "*.csv";
-    dir.setNameFilters(filters);
 
     QFileInfoList list = dir.entryInfoList();
     QString FileName;
@@ -93,10 +97,17 @@ void hupdate::selectFolder() {
         QFileInfo fileInfo = list.at(i);
         FileName = fileInfo.fileName();
         FilePath = fileInfo.filePath();
-        fileMap[FileName] = FilePath;
+        //目录削除
+        if (FileName == "." || FileName == "..") {
+            continue;
+        }
+        //如果is文件夹
+        if (fileInfo.isDir()) {
+            traversalFolder(FilePath, relative_path + FileName + "/");
+        } else {
+            fileMap[relative_path + FileName] = FilePath;
+        }
     }
-
-    showUploadFiles();
 }
 
 //显示处于上传中的文件
@@ -117,12 +128,59 @@ void hupdate::uploadFilesBegin() {
 
     QString bucket = bucket_box->currentText();
 
+    QNetworkReply *reply;
+    QNetworkRequest request;
+    QEventLoop loop;
+
+    //获取存储空间地址凭证
+    upload_result_browser->append("获取存储空间域名凭证");
+    h_manager = new QNetworkAccessManager(this);
+
+    QUrl url = "http://" + main_server_ip + "/original_server/common/qiniuGetAddressAuth?url_string=http://api.qiniu.com/v6/domain/list?tbl=" + bucket + "&bucket=" + bucket + "&content_type=application/x-www-form-urlencoded";
+    connect(h_manager, &QNetworkAccessManager::finished, &loop, &QEventLoop::quit);
+    reply = h_manager->get(QNetworkRequest(url));
+    loop.exec();
+
+    if (reply->error() != QNetworkReply::NoError) {
+        upload_result_browser->append("获取存储空间域名凭证失败,请联系管理员");
+        return;
+    }
+    upload_result_browser->append("凭证获取成功");
+
+    //获取存储空间地址
+    upload_result_browser->append("获取存储空间域名中");
+    request.setUrl(QUrl("http://api.qiniu.com/v6/domain/list?tbl=" + bucket));
+    request.setRawHeader("Authorization", "QBox " + reply->readAll());
+    connect(h_manager, &QNetworkAccessManager::finished, &loop, &QEventLoop::quit);
+    reply = h_manager->get(request);
+    loop.exec();
+    if (reply->error() != QNetworkReply::NoError) {
+        upload_result_browser->append("获取存储空间域名失败,请联系管理员");
+        return;
+    }
+    QJsonParseError error;
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(reply->readAll(), &error);
+    if (error.error != QJsonParseError::NoError) {
+        upload_result_browser->append("数据解析失败,请联系管理员");
+        return;
+    }
+    QVariantList address_lists = jsonDocument.toVariant().toList();
+    QString zone_address = address_lists.at(0).toString();
+    upload_result_browser->append("获取存储空间成功");
+
         //开始循环
         QMap <QString, QString>::iterator i;
 
         for (i=fileMap.begin();i!=fileMap.end();i++) {
+            //读取文件
+            QFile file(i.value());
+            file.open(QIODevice::ReadOnly);
+            QByteArray file_content = file.readAll();
+
             //上传凭证创建
-            QString filename = i.key();
+            QString relative_path = i.key();
+            QFileInfo fileinfo(i.value());
+            QString filename = fileinfo.fileName();
 
             upload_result_browser->append("开始上传:" + filename);
 
@@ -131,17 +189,8 @@ void hupdate::uploadFilesBegin() {
                 upload_result_browser->append(filename + "上传失败");
                 continue;
             }
-            //读取文件
-            QFile file(i.value());
-            file.open(QIODevice::ReadOnly);
-            QByteArray file_content = file.readAll();
 
             //开始请求
-            h_manager = new QNetworkAccessManager(this);
-            QNetworkRequest request;
-            QNetworkReply *reply;
-            QEventLoop loop;
-
             QString boundary = "EmiriatanMajitenshi";
 
             request.setUrl(QUrl("http://up-z2.qiniu.com"));
@@ -177,18 +226,33 @@ void hupdate::uploadFilesBegin() {
                 upload_result_browser->append("七牛资源上传成功");
             } else {
                 upload_result_browser->append("七牛资源上传失败");
+                continue;
             }
 
             //将资源导入到数据库
-//            QString version = version_line->text();
-////            QString path
+            upload_result_browser->append("正在将资源地址导入到账号服务器");
+            QString version = version_line->text();
+            QString size = QString::number(file.size(), 10);
+            QByteArray md5Byte = QCryptographicHash::hash(file.readAll(), QCryptographicHash::Md5);
+            QString md5String;
+            md5String.append(md5Byte.toHex());
 
-//            QByteArray md5Byte = QCryptographicHash::hash(file.readAll(), QCryptographicHash::Md5);
-//            connect(h_manager, &QNetworkAccessManager::finished, &loop, &QEventLoop::quit);
+            //拼接url
+            QString file_address = "http://" + zone_address + "/" + filename;
+            QString url = "http://" + main_server_ip + "/original_server/common/uploadUpdateResource?version=" + version + "&area=" + server_area + "&path=" + relative_path+ "&size=" + size + "&md5=" + md5String + "&url=" + file_address;
+            connect(h_manager, &QNetworkAccessManager::finished, &loop, &QEventLoop::quit);
 
-//            reply = h_manager->get(QNetworkRequest(QUrl("http://" + main_server_ip + "original_server/common/uploadUpdateResource?version=")));
+            reply = h_manager->get(QNetworkRequest(QUrl(url)));
+            loop.exec();
 
-//            loop.exec();
+            QTextCodec *codec = QTextCodec::codecForName("utf8");
+            QString str = codec->toUnicode(reply->readAll());
+
+            if (reply->error() != QNetworkReply::NoError || str != "success") {
+                upload_result_browser->append("导入失败,请联系管理员");
+                return;
+            }
+            upload_result_browser->append("资源上传成功");
 
             h_manager->clearConnectionCache();
             h_manager->clearAccessCache();
@@ -283,7 +347,7 @@ void hupdate::addBucket() {
     QNetworkRequest request;
     QNetworkReply *reply;
     QEventLoop loop;
-    main_server_ip = "localhost";
+
     request.setUrl(QUrl("http://" + main_server_ip + "/original_server/common/qiniuAddBucketAuth?url_string=http://rs.qiniu.com/mkbucketv2/&bucket=" + bucket + "&content_type=application/x-www-form-urlencoded"));
     connect(h_manager, &QNetworkAccessManager::finished, &loop, &QEventLoop::quit);
 

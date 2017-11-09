@@ -9,8 +9,9 @@
 #include "hupdate.h"
 #include "people_num.h"
 #include "ldungeon.h"
+#include "log.h"
 
-ui::ui(QWidget *parent)
+Ui::Ui(QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowTitle("tool");
@@ -37,6 +38,7 @@ ui::ui(QWidget *parent)
     i++;
     layout->addWidget(people_num_button, i, 0, 1, 1);
     layout->addWidget(legend_dungeon_button, i, 1, 1, 1);
+    layout->addWidget(log_inquire_button, i, 2, 1, 1);
     i++;
     layout->addWidget(area_name_label, i, 0, 1, 1);
     layout->addWidget(area_name_content_label, i, 1, 1, 1);
@@ -87,25 +89,26 @@ ui::ui(QWidget *parent)
 
 
     //信号
-    connect(search_button, &QPushButton::clicked, this, &ui::clickAreaSearch);
-    connect(area_version_button, &QPushButton::clicked, this, &ui::clickVersionChange);
-    connect(open_file_button, &QPushButton::clicked, this, &ui::openFile);
-    connect(upload_update_resource_button, &QPushButton::clicked, this, &ui::uploadFile);
-    connect(search_version_button, &QPushButton::clicked, this, &ui::searchVersionResource);
-    connect(user_operate_button, &QPushButton::clicked, this, &ui::userOperate);
-    connect(robot_create_button, &QPushButton::clicked, this, &ui::createRobot);
-    connect(cdkey_create_button, &QPushButton::clicked, this, &ui::createCdkey);
-    connect(season_cal_button, &QPushButton::clicked, this, &ui::seasonCal);
-    connect(csv_upload_button, &QPushButton::clicked, this, &ui::uploadCsv);
-    connect(send_mail_button, &QPushButton::clicked, this, &ui::sendMail);
-    connect(data_modify_button, &QPushButton::clicked, this, &ui::dataModify);
-    connect(hot_update_button, &QPushButton::clicked, this, &ui::hotUpdate);
-    connect(people_num_button, &QPushButton::clicked, this, &ui::peopleNum);
-    connect(legend_dungeon_button, &QPushButton::clicked, this, &ui::legendDungeon);
+    connect(search_button, &QPushButton::clicked, this, &Ui::clickAreaSearch);
+    connect(area_version_button, &QPushButton::clicked, this, &Ui::clickVersionChange);
+    connect(open_file_button, &QPushButton::clicked, this, &Ui::openFile);
+    connect(upload_update_resource_button, &QPushButton::clicked, this, &Ui::uploadFile);
+    connect(search_version_button, &QPushButton::clicked, this, &Ui::searchVersionResource);
+    connect(user_operate_button, &QPushButton::clicked, this, &Ui::userOperate);
+    connect(robot_create_button, &QPushButton::clicked, this, &Ui::createRobot);
+    connect(cdkey_create_button, &QPushButton::clicked, this, &Ui::createCdkey);
+    connect(season_cal_button, &QPushButton::clicked, this, &Ui::seasonCal);
+    connect(csv_upload_button, &QPushButton::clicked, this, &Ui::uploadCsv);
+    connect(send_mail_button, &QPushButton::clicked, this, &Ui::sendMail);
+    connect(data_modify_button, &QPushButton::clicked, this, &Ui::dataModify);
+    connect(hot_update_button, &QPushButton::clicked, this, &Ui::hotUpdate);
+    connect(people_num_button, &QPushButton::clicked, this, &Ui::peopleNum);
+    connect(legend_dungeon_button, &QPushButton::clicked, this, &Ui::legendDungeon);
+    connect(log_inquire_button, &QPushButton::clicked, this, &Ui::logInquire);
 }
 
 //获取渠道组信息并填充
-void ui::areaFill(QNetworkReply *reply)
+void Ui::areaFill(QNetworkReply *reply)
 {
     //使用utf8编码, 这样可以显示中文
 //    QTextCodec *codec = QTextCodec::codecForName("utf8");
@@ -133,7 +136,7 @@ void ui::areaFill(QNetworkReply *reply)
 }
 
 //将特定渠道组的version输出
-void ui::areaInfoFill(QNetworkReply *reply)
+void Ui::areaInfoFill(QNetworkReply *reply)
 {
     //处理返回的JSON数据
     QJsonParseError error;
@@ -154,7 +157,7 @@ void ui::areaInfoFill(QNetworkReply *reply)
 }
 
 //点击查询按钮
-void ui::clickAreaSearch()
+void Ui::clickAreaSearch()
 {
     QString area = area_box->currentText();
 
@@ -170,7 +173,7 @@ void ui::clickAreaSearch()
 }
 
 //点击提交版本号按钮
-void ui::clickVersionChange()
+void Ui::clickVersionChange()
 {
     QString version = area_version_content_line->text();
     QString area = area_box->currentText();
@@ -186,7 +189,7 @@ void ui::clickVersionChange()
 }
 
 //改变版本号和服务器交互
-void ui::changeVersion(QNetworkReply *reply)
+void Ui::changeVersion(QNetworkReply *reply)
 {
     //使用utf8编码, 这样可以显示中文
     QTextCodec *codec = QTextCodec::codecForName("utf8");
@@ -197,7 +200,7 @@ void ui::changeVersion(QNetworkReply *reply)
 }
 
 //打开文件
-void ui::openFile()
+void Ui::openFile()
 {
     QString path = QFileDialog::getOpenFileName(this);
 
@@ -221,7 +224,7 @@ void ui::openFile()
 }
 
 //上传热更新资源
-void ui::uploadFile()
+void Ui::uploadFile()
 {
     QString area = area_box->currentText();
     QString version = file_version_line->text();
@@ -240,7 +243,7 @@ void ui::uploadFile()
 }
 
 //上传热更新资源的结果
-void ui::uploadFileResult(QNetworkReply *reply)
+void Ui::uploadFileResult(QNetworkReply *reply)
 {
     //使用utf8编码, 这样可以显示中文
     QTextCodec *codec = QTextCodec::codecForName("utf8");
@@ -255,7 +258,7 @@ void ui::uploadFileResult(QNetworkReply *reply)
 }
 
 //查询当前版本的资源
-void ui::searchVersionResource(){
+void Ui::searchVersionResource(){
     QString area = area_box->currentText();
     QString version = file_version_line->text();
 
@@ -269,7 +272,7 @@ void ui::searchVersionResource(){
 }
 
 //将查询到的版本资源显示出来
-void ui::appearVersionResource(QNetworkReply *reply) {
+void Ui::appearVersionResource(QNetworkReply *reply) {
     QString version = file_version_line->text();
 
     //使用utf8编码, 这样可以显示中文
@@ -330,14 +333,14 @@ void ui::appearVersionResource(QNetworkReply *reply) {
 }
 
 //打开用户操作的界面
-void ui::userOperate() {
+void Ui::userOperate() {
     user *u = new user(this);
 
     u->show();
 }
 
 //打开生成机器人的界面
-void ui::createRobot() {
+void Ui::createRobot() {
     robot *r = new robot(this);
 
     r->show();
@@ -345,57 +348,64 @@ void ui::createRobot() {
 
 
 //打开生成cdkey的界面
-void ui::createCdkey() {
+void Ui::createCdkey() {
     cdkey *c = new cdkey(this);
 
     c->show();
 }
 
 //打开结算赛季的界面
-void ui::seasonCal() {
+void Ui::seasonCal() {
     season *s = new season(this);
 
     s->show();
 }
 
 //打开上传CSV的界面
-void ui::uploadCsv() {
+void Ui::uploadCsv() {
     csv *c = new csv(this);
 
     c->show();
 }
 
 //打开发送邮件的界面
-void ui::sendMail() {
+void Ui::sendMail() {
     mail *m = new mail(this);
 
     m->show();
 }
 
 //打开资料修改的界面
-void ui::dataModify() {
+void Ui::dataModify() {
     datam *d = new datam(this);
 
     d->show();
 }
 
 //打开热更新的界面
-void ui::hotUpdate() {
+void Ui::hotUpdate() {
     hupdate *u = new hupdate(this);
 
     u->show();
 }
 
 //打开查看人数的界面
-void ui::peopleNum() {
+void Ui::peopleNum() {
 //    people_num *p = new people_num(this);
 
 //    u->show();
 }
 
 //打开降临副本结算的界面
-void ui::legendDungeon() {
+void Ui::legendDungeon() {
     ldungeon *l = new ldungeon(this);
+
+    l->show();
+}
+
+//打开日志记录的界面
+void Ui::logInquire() {
+    Log *l = new Log(this);
 
     l->show();
 }

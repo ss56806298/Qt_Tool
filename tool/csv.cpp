@@ -4,7 +4,7 @@
 #include "windows.h"
 #include <QEventLoop>
 
-csv::csv(ui *ui, QWidget *parent) {
+csv::csv(Ui *ui, QWidget *parent) {
     server_area = ui->area_box->currentText();
 
     setWindowTitle(server_area);

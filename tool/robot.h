@@ -1,4 +1,4 @@
-#ifndef ROBOT_H
+﻿#ifndef ROBOT_H
 #define ROBOT_H
 
 #include <QMainWindow>
@@ -7,6 +7,7 @@
 #include <QTableWidgetItem>
 #include <QTextBrowser>
 #include <QCheckBox>
+#include <QHeaderView>
 
 #include "ui.h"
 
@@ -47,7 +48,7 @@ class robot:public QMainWindow {
         QString makeRand(QMap <QString, int> map);
     Q_OBJECT
     public:
-        robot(ui *ui, QWidget *parent = Q_NULLPTR);
+        robot(Ui *ui, QWidget *parent = Q_NULLPTR);
 
         //布局
         QGridLayout *menu_layout = new QGridLayout(this);

@@ -2,7 +2,7 @@
 
 #include <QMessageBox>
 
-cdkey::cdkey(ui *ui, QWidget *parent)
+cdkey::cdkey(Ui *ui, QWidget *parent)
 {
     setWindowTitle("cdkey");
 

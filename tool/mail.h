@@ -24,7 +24,7 @@ class mail: public QMainWindow {
         QNetworkAccessManager *m_manager;
     Q_OBJECT
     public:
-        mail(ui *ui, QWidget *parent = Q_NULLPTR);
+        mail(Ui *ui, QWidget *parent = Q_NULLPTR);
 
         //布局
         QHBoxLayout *layout = new QHBoxLayout;

@@ -12,7 +12,6 @@
 #include <QCryptographicHash>
 
 #include <QMainWindow>
-#include "ui_tool.h"
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -24,20 +23,17 @@
 #include <QTextCodec>
 #include <QString>
 
-typedef struct serverDetail{
-    QString server_num;
-    QString server_name;
-    QString server_address;
-}sd;
+#include "constant.h"
 
-class ui : public QMainWindow
+class Ui : public QMainWindow
 {
     public:
-        QString main_server_ip = "taptap.yxlc.shadowpower.cn";
-//        QString main_server_ip = "yxlc.shadowpower.cn:82";
+//        QString main_server_ip = "119.29.66.60";
+//        QString main_server_ip = "taptap.yxlc.shadowpower.cn";
+        QString main_server_ip = "yxlc.shadowpower.cn:82";
     Q_OBJECT
     public:
-        ui(QWidget *parent = Q_NULLPTR);
+        Ui(QWidget *parent = Q_NULLPTR);
         //按钮
         QPushButton *search_button = new QPushButton("查询");
         QPushButton *area_version_button = new QPushButton("提交版本号");
@@ -54,6 +50,7 @@ class ui : public QMainWindow
         QPushButton *hot_update_button = new QPushButton("热更新");
         QPushButton *people_num_button = new QPushButton("玩家人数");
         QPushButton *legend_dungeon_button = new QPushButton("降临结算");
+        QPushButton *log_inquire_button = new QPushButton("日志查询");
 
         //标签
         QLabel *area_name_label = new QLabel("渠道组");
@@ -104,6 +101,7 @@ class ui : public QMainWindow
         void hotUpdate();
         void peopleNum();
         void legendDungeon();
+        void logInquire();
 
     private:
         QNetworkAccessManager *n_manager;

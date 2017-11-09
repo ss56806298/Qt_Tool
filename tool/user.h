@@ -28,7 +28,7 @@ class user : public QMainWindow
 
     Q_OBJECT
     public:
-        user(ui *ui, QWidget *parent = Q_NULLPTR);
+        user(Ui *ui, QWidget *parent = Q_NULLPTR);
 
         //布局
         QGridLayout *layout = new QGridLayout(this);

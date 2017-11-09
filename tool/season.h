@@ -18,7 +18,7 @@ class season : public QMainWindow
         QNetworkAccessManager *s_manager;
     Q_OBJECT
     public:
-        season(ui *ui, QWidget *parent = Q_NULLPTR);
+        season(Ui *ui, QWidget *parent = Q_NULLPTR);
 
         //布局
         QGridLayout *layout = new QGridLayout();

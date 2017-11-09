@@ -1,6 +1,7 @@
 ﻿#include "datam.h"
+#include <QEventLoop>
 
-datam::datam(ui *ui, QWidget *parent) {
+datam::datam(Ui *ui, QWidget *parent) {
     server_area = ui->area_box->currentText();
 
     setWindowTitle("data_manager");

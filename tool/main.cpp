@@ -1,4 +1,4 @@
-#include "ui.h"
+﻿#include "ui.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])
@@ -11,8 +11,8 @@ int main(int argc, char *argv[])
     //qt has a bug in 5.2.1(windows)? so I use setLibraryPaths
     QApplication::setLibraryPaths( QApplication::libraryPaths() << BKE_CURRENT_DIR) ;
 
-    ui w;
-    w.show();
+    Ui *w = new Ui;
+    w->show();
 
     return a.exec();
 }

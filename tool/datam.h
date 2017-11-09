@@ -20,7 +20,7 @@ class datam:public QMainWindow
         QNetworkAccessManager *d_manager;
     Q_OBJECT
     public:
-        datam(ui *ui, QWidget *parent = Q_NULLPTR);
+        datam(Ui *ui, QWidget *parent = Q_NULLPTR);
 
         //标签
         QLabel *user_id_label = new QLabel("角色ID");

@@ -1,6 +1,6 @@
-#include "user.h"
+﻿#include "user.h"
 
-user::user(ui *ui, QWidget *parent)
+user::user(Ui *ui, QWidget *parent)
 //    : QMainWindow(parent)
 {
     server_area = ui->area_box->currentText();

@@ -21,7 +21,7 @@ class csv: public QMainWindow
         QNetworkAccessManager *c_manager;
     Q_OBJECT
     public:
-        csv(ui *ui, QWidget *parent = Q_NULLPTR);
+        csv(Ui *ui, QWidget *parent = Q_NULLPTR);
 
         //布局
         QGridLayout *layout = new QGridLayout;

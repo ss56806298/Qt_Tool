@@ -1,4 +1,4 @@
-#ifndef CDKEY_H
+﻿#ifndef CDKEY_H
 #define CDKEY_H
 
 #include "ui.h"
@@ -16,7 +16,7 @@ class cdkey : public QMainWindow
         QNetworkAccessManager *c_manager;
     Q_OBJECT
     public:
-        cdkey(ui *ui, QWidget *parent = Q_NULLPTR);
+        cdkey(Ui *ui, QWidget *parent = Q_NULLPTR);
 
         //布局
         QGridLayout *layout = new QGridLayout(this);

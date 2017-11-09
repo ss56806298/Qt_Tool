@@ -1,6 +1,7 @@
 ﻿#include "mail.h"
+#include <QEventLoop>
 
-mail::mail(ui *ui, QWidget *parent) {
+mail::mail(Ui *ui, QWidget *parent) {
     server_area = ui->area_box->currentText();
 
     setWindowTitle("mail");
@@ -299,6 +300,7 @@ void mail::setServerInfo(QNetworkReply *reply) {
 
                 server_num_box->addItem(sd1.server_num);
             }
+
 
         }
     } else {

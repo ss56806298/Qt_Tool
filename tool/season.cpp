@@ -1,6 +1,6 @@
 ﻿#include "season.h"
 
-season::season(ui *ui, QWidget *parent){
+season::season(Ui *ui, QWidget *parent){
     server_area = ui->area_box->currentText();
 
     setWindowTitle(server_area);
