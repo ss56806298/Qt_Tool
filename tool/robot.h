@@ -36,6 +36,8 @@ class robot:public QMainWindow {
         QMap <QString, int> weapons;    //武器的集合
         QMap <QString, int> helmets;    //头盔的集合
         QMap <QString, int> armors;     //装甲的集合
+
+        QStringList en_nicknames; //英文昵称集合
     private:
         QNetworkAccessManager *r_manager;
 
@@ -90,6 +92,9 @@ class robot:public QMainWindow {
         QLabel *user_pvp_score_label = new QLabel("pvp分数");
         QLabel *user_season_label = new QLabel("是否为赛季");
         QLabel *user_season_num_label = new QLabel("赛季编号");
+        QLabel *english_nickname_label = new QLabel("英文昵称的机器人?");
+        QLabel *english_nickname_num_label = new QLabel("昵称数量");
+        QLabel *english_nickname_num_content_label = new QLabel;
 
         //输入框
         QLineEdit *create_robot_num_line = new QLineEdit();
@@ -120,6 +125,7 @@ class robot:public QMainWindow {
 
         //打勾的选项
         QCheckBox *season_checkbox = new QCheckBox(this);
+        QCheckBox *english_nickname_checkbox = new QCheckBox(this);
 
         //button
         QPushButton *user_monster_add_button = new QPushButton("增加");
@@ -135,6 +141,7 @@ class robot:public QMainWindow {
         void setServerInfo(QNetworkReply *reply);
         QString getAddressByServerNum(QString server_num);
 
+        void enNickname(int checkState);
         void addMonster();
         void addWeapon();
         void addHelmet();

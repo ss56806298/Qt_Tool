@@ -1,5 +1,7 @@
 ﻿#include "datam.h"
 #include <QEventLoop>
+#include <QTableWidget>
+#include <QHeaderView>
 
 datam::datam(Ui *ui, QWidget *parent) {
     server_area = ui->area_box->currentText();
@@ -98,6 +100,14 @@ datam::datam(Ui *ui, QWidget *parent) {
 
     vip_level_line->setEnabled(false);
 
+    //惩罚
+    i = 0;
+    punish_layout->addWidget(login_banned_label , i, 0, 1, 1);
+    punish_layout->addWidget(login_banned_stat_label , i, 1, 1, 1);
+    i++;
+    punish_layout->addWidget(silent_label, i, 0, 1, 1);
+    punish_layout->addWidget(silent_stat_label, i, 1, 1, 1);
+
     //下部
     monster_button->setMinimumWidth(150);
     weapon_button->setMinimumWidth(150);
@@ -121,10 +131,12 @@ datam::datam(Ui *ui, QWidget *parent) {
     up_layout->addWidget(game_master_widget);
     up_layout->addWidget(game_master_status_widget);
     up_layout->addWidget(vip_widget);
+    up_layout->addWidget(punish_widget);
     up_layout->addWidget(result_browser);
     game_master_widget->setLayout(game_master_layout);
     game_master_status_widget->setLayout(game_master_status_layout);
     vip_widget->setLayout(vip_layout);
+    punish_widget->setLayout(punish_layout);
 
     //全局
     layout->addWidget(top_widget);
@@ -145,6 +157,9 @@ datam::datam(Ui *ui, QWidget *parent) {
 
     connect(game_master_button, &QPushButton::clicked, this, &datam::modifyGameMaster);
     connect(vip_info_button, &QPushButton::clicked, this, &datam::modifyVipInfo);
+    connect(monster_button, &QPushButton::clicked, this, &datam::showMonsterInfo);
+    connect(weapon_button, &QPushButton::clicked, this, &datam::showWeaponInfo);
+    connect(guard_button, &QPushButton::clicked, this, &datam::showGuardInfo);
 }
 
 //改变了USER_ID的值
@@ -191,9 +206,12 @@ void datam::searchUser() {
     QVariantMap result = jsonDocument.toVariant().toMap();
     QVariantMap game_master = result["game_master"].toMap();
     QVariantMap vip_info = result["vip_info"].toMap();
+    int login_banned_flag = result["login_banned_flag"].toInt();
+    int chat_banned_flag = result["chat_banned_flag"].toInt();
 
     setGameMaster(game_master);
     setVipInfo(vip_info);
+    setPunishInfo(login_banned_flag, chat_banned_flag);
 
     edit_flag = true;   //设为可编辑状态
 
@@ -365,6 +383,286 @@ void datam::setGameMaster(QVariantMap game_master) {
 void datam::setVipInfo(QVariantMap vip_info) {
     vip_exp_line->setText(vip_info["exp"].toString());
     vip_level_line->setText(vip_info["level"].toString());
+}
+
+void datam::setPunishInfo(int login_banned_flag, int chat_banned_flag)
+{
+    QString login_banned_message;
+    if (login_banned_flag == 0) {
+        login_banned_message = "正常";
+//        login_banned_stat_label->set = ;
+    } else {
+        login_banned_message = "限制登录";
+    }
+
+    QString chat_banned_message;
+    if (chat_banned_flag == 0) {
+        chat_banned_message == "正常";
+    } else {
+        login_banned_message == "禁言中";
+    }
+}
+
+//显示英雄数据
+void datam::showMonsterInfo() {
+    QString server_num = server_num_box->currentText();
+    QString server_ip = getAddressByServerNum(server_num);
+    QString user_id = user_id_line->text();
+
+    if (user_id == "") {
+        result_browser->append("id不能为空");
+        return;
+    }
+
+    d_manager = new QNetworkAccessManager(this);
+
+    QUrl url = "http://" + server_ip + "/The_Wall/common/showMonster?user_id=" + user_id;
+//    QUrl url = "http://localhost/The_Wall/common/showMonster?user_id=" + user_id;
+
+    QEventLoop loop;
+    QNetworkReply *reply;
+    QNetworkRequest request;
+
+    connect(d_manager, &QNetworkAccessManager::finished, &loop, &QEventLoop::quit);
+
+    request.setUrl(url);
+
+    reply = d_manager->get(request);
+
+    monster_button->setEnabled(false);
+
+    loop.exec();
+
+    monster_button->setEnabled(true);
+
+    //结果表示
+    if (reply->error() != QNetworkReply::NoError) {
+        result_browser->append("<div style=\"color:#FF0000\">英雄查询失败</div>");
+        return;
+    }
+
+    QJsonParseError js_err;
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(reply->readAll(), &js_err);
+    if (js_err.error != QJsonParseError::NoError) {
+        result_browser->append("<div style=\"color:#FF0000\">数据解析失败</div>");
+        return;
+    }
+
+    QVariantMap result = jsonDocument.toVariant().toMap();
+
+    //生成新的窗口记录查询的日志
+    QMainWindow *window = new QMainWindow;
+    QTableWidget *m_widget = new QTableWidget;
+    m_widget->setColumnCount(12);
+    m_widget->setHorizontalHeaderLabels(QStringList()<<"英雄ID"<<"等级"<<"HP"<<"攻击"<<"防御"<<"暴击"<<"闪避"<<"法强"<<"主动技等级"<<"连锁技等级"<<"品阶"<<"战斗力");
+
+    m_widget->verticalHeader()->setVisible(false);
+
+    window->setCentralWidget(m_widget);
+
+    int row = 0;
+    foreach (QVariant monster_info, result["monster_info"].toList()) {
+        QVariantMap monster = monster_info.toMap();
+        m_widget->insertRow(row);
+
+        m_widget->setItem(row, 0, new QTableWidgetItem(monster["user_monster"].toString()));
+        m_widget->setItem(row, 1, new QTableWidgetItem(monster["level"].toString()));
+        m_widget->setItem(row, 2, new QTableWidgetItem(monster["hp"].toString()));
+        m_widget->setItem(row, 3, new QTableWidgetItem(monster["attack"].toString()));
+        m_widget->setItem(row, 4, new QTableWidgetItem(monster["defense"].toString()));
+        m_widget->setItem(row, 5, new QTableWidgetItem(monster["critical"].toString()));
+        m_widget->setItem(row, 6, new QTableWidgetItem(monster["missing"].toString()));
+        m_widget->setItem(row, 7, new QTableWidgetItem(monster["ap"].toString()));
+        m_widget->setItem(row, 8, new QTableWidgetItem(monster["active_skill_level"].toString()));
+        m_widget->setItem(row, 9, new QTableWidgetItem(monster["chain_skill_level"].toString()));
+        m_widget->setItem(row, 10, new QTableWidgetItem(monster["grade_level"].toString()));
+        m_widget->setItem(row, 11, new QTableWidgetItem(monster["strengthen_prediction"].toString()));
+
+        row++;
+    }
+
+    if (row == 0) {
+        result_browser->append("<div style=\"color:#FF0000\">无该玩家的英雄数据</div>");
+        return;
+    }
+
+    d_manager->clearConnectionCache();
+    d_manager->clearAccessCache();
+
+    reply->deleteLater();
+
+    window->show();
+}
+
+//显示武器数据
+void datam::showWeaponInfo() {
+    QString server_num = server_num_box->currentText();
+    QString server_ip = getAddressByServerNum(server_num);
+    QString user_id = user_id_line->text();
+
+    if (user_id == "") {
+        result_browser->append("id不能为空");
+        return;
+    }
+
+    d_manager = new QNetworkAccessManager(this);
+
+    QUrl url = "http://" + server_ip + "/The_Wall/common/showWeapon?user_id=" + user_id;
+//    QUrl url = "http://localhost/The_Wall/common/showWeapon?user_id=" + user_id;
+
+    QEventLoop loop;
+    QNetworkReply *reply;
+    QNetworkRequest request;
+
+    connect(d_manager, &QNetworkAccessManager::finished, &loop, &QEventLoop::quit);
+
+    request.setUrl(url);
+
+    reply = d_manager->get(request);
+
+    weapon_button->setEnabled(false);
+
+    loop.exec();
+
+    weapon_button->setEnabled(true);
+
+    //结果表示
+    if (reply->error() != QNetworkReply::NoError) {
+        result_browser->append("<div style=\"color:#FF0000\">武器查询失败</div>");
+        return;
+    }
+
+    QJsonParseError js_err;
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(reply->readAll(), &js_err);
+    if (js_err.error != QJsonParseError::NoError) {
+        result_browser->append("<div style=\"color:#FF0000\">数据解析失败</div>");
+        return;
+    }
+
+    QVariantMap result = jsonDocument.toVariant().toMap();
+
+    //生成新的窗口记录查询的日志
+    QMainWindow *window = new QMainWindow;
+    QTableWidget *m_widget = new QTableWidget;
+    m_widget->setColumnCount(7);
+    m_widget->setHorizontalHeaderLabels(QStringList()<<"武器ID"<<"等级"<<"攻击"<<"防御"<<"主动技等级"<<"连锁技等级"<<"战斗力");
+
+    m_widget->verticalHeader()->setVisible(false);
+
+    window->setCentralWidget(m_widget);
+
+    int row = 0;
+    foreach (QVariant weapon_info, result["weapon_info"].toList()) {
+        QVariantMap weapon = weapon_info.toMap();
+        m_widget->insertRow(row);
+
+        m_widget->setItem(row, 0, new QTableWidgetItem(weapon["user_weapon"].toString()));
+        m_widget->setItem(row, 1, new QTableWidgetItem(weapon["level"].toString()));
+        m_widget->setItem(row, 2, new QTableWidgetItem(weapon["attack"].toString()));
+        m_widget->setItem(row, 3, new QTableWidgetItem(weapon["defense"].toString()));
+        m_widget->setItem(row, 4, new QTableWidgetItem(weapon["active_skill_level"].toString()));
+        m_widget->setItem(row, 5, new QTableWidgetItem(weapon["chain_skill_level"].toString()));
+        m_widget->setItem(row, 6, new QTableWidgetItem(weapon["strengthen_prediction"].toString()));
+
+        row++;
+    }
+
+    if (row == 0) {
+        result_browser->append("<div style=\"color:#FF0000\">无该玩家的武器数据</div>");
+        return;
+    }
+
+    d_manager->clearConnectionCache();
+    d_manager->clearAccessCache();
+
+    reply->deleteLater();
+
+    window->show();
+}
+
+//显示装甲数据
+void datam::showGuardInfo() {
+    QString server_num = server_num_box->currentText();
+    QString server_ip = getAddressByServerNum(server_num);
+    QString user_id = user_id_line->text();
+
+    if (user_id == "") {
+        result_browser->append("id不能为空");
+        return;
+    }
+
+    d_manager = new QNetworkAccessManager(this);
+
+    QUrl url = "http://" + server_ip + "/The_Wall/common/showGuard?user_id=" + user_id;
+//    QUrl url = "http://localhost/The_Wall/common/showGuard?user_id=" + user_id;
+
+    QEventLoop loop;
+    QNetworkReply *reply;
+    QNetworkRequest request;
+
+    connect(d_manager, &QNetworkAccessManager::finished, &loop, &QEventLoop::quit);
+
+    request.setUrl(url);
+
+    reply = d_manager->get(request);
+
+    guard_button->setEnabled(false);
+
+    loop.exec();
+
+    guard_button->setEnabled(true);
+
+    //结果表示
+    if (reply->error() != QNetworkReply::NoError) {
+        result_browser->append("<div style=\"color:#FF0000\">装甲查询失败</div>");
+        return;
+    }
+
+    QJsonParseError js_err;
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(reply->readAll(), &js_err);
+    if (js_err.error != QJsonParseError::NoError) {
+        result_browser->append("<div style=\"color:#FF0000\">数据解析失败</div>");
+        return;
+    }
+
+    QVariantMap result = jsonDocument.toVariant().toMap();
+
+    //生成新的窗口记录查询的日志
+    QMainWindow *window = new QMainWindow;
+    QTableWidget *m_widget = new QTableWidget;
+    m_widget->setColumnCount(7);
+    m_widget->setHorizontalHeaderLabels(QStringList()<<"装甲ID"<<"等级"<<"攻击"<<"防御"<<"被动技等级"<<"战斗力");
+
+    m_widget->verticalHeader()->setVisible(false);
+
+    window->setCentralWidget(m_widget);
+
+    int row = 0;
+    foreach (QVariant weapon_info, result["weapon_info"].toList()) {
+        QVariantMap weapon = weapon_info.toMap();
+        m_widget->insertRow(row);
+
+        m_widget->setItem(row, 0, new QTableWidgetItem(weapon["user_weapon"].toString()));
+        m_widget->setItem(row, 1, new QTableWidgetItem(weapon["level"].toString()));
+        m_widget->setItem(row, 2, new QTableWidgetItem(weapon["attack"].toString()));
+        m_widget->setItem(row, 3, new QTableWidgetItem(weapon["defense"].toString()));
+        m_widget->setItem(row, 4, new QTableWidgetItem(weapon["passive_skill_level"].toString()));
+        m_widget->setItem(row, 5, new QTableWidgetItem(weapon["strengthen_prediction"].toString()));
+
+        row++;
+    }
+
+    if (row == 0) {
+        result_browser->append("<div style=\"color:#FF0000\">无该玩家的武器数据</div>");
+        return;
+    }
+
+    d_manager->clearConnectionCache();
+    d_manager->clearAccessCache();
+
+    reply->deleteLater();
+
+    window->show();
 }
 
 void datam::setServerInfo(QNetworkReply *reply) {

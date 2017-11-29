@@ -320,6 +320,7 @@ void Log::stoneLogInquire()
         for (i = 0;i < log_size; i++) {
 
             QString v = log_string.at(i);
+
             if (v == "[") {
                 w_widget->insertRow(row);
                 time_flag = 1;
@@ -396,12 +397,13 @@ void Log::stoneLogInquire()
 
                     w_widget->setItem(row, 3, new QTableWidgetItem(stone_type));
 
-                    if (v == "\n") {
-                        log_time = "";
-                        row++;
-                    }
                 } else if (key == "remain") {
                     w_widget->setItem(row, 4, new QTableWidgetItem(value));
+                }
+
+                if (v == "\n") {
+                    log_time = "";
+                    row++;
                 }
             } else if (v == "\xa") {
                 log_time = "";

@@ -107,12 +107,16 @@ void user::setUserInfo(QNetworkReply *reply) {
     QLabel *level_label = new QLabel("等级");
     QLabel *strengthen_label = new QLabel("总战力");
     QLabel *create_time_label = new QLabel("账号创建时间");
+    QLabel *platform_label = new QLabel("渠道");
+    QLabel *platform_uid_label = new QLabel("渠道号");
 
     layoutU->addWidget(user_id_label, 0, 0, 1, 1);
     layoutU->addWidget(gender_label, 0, 1, 1, 1);
     layoutU->addWidget(level_label, 0, 2, 1, 1);
     layoutU->addWidget(strengthen_label, 0, 3, 1, 1);
     layoutU->addWidget(create_time_label, 0, 4, 1, 1);
+    layoutU->addWidget(platform_label, 0, 5, 1, 1);
+    layoutU->addWidget(platform_uid_label, 0, 6, 1, 1);
     //处理返回的JSON数据
     QJsonParseError error;
 
@@ -129,12 +133,16 @@ void user::setUserInfo(QNetworkReply *reply) {
                 QLabel *level_content_label = new QLabel(playerList["level"].toString());
                 QLabel *strengthen_content_label = new QLabel(playerList["strengthen_prediction_sum"].toString());
                 QLabel *create_time_content_label = new QLabel(playerList["create_time"].toString());
+                QLabel *platform_content_label = new QLabel(playerList["platform"].toString());
+                QLabel *platform_uid_content_label = new QLabel(playerList["platform_uid"].toString());
 
                 layoutU->addWidget(user_id_content_label, i , 0, 1, 1);
                 layoutU->addWidget(gender_content_label, i , 1, 1, 1);
                 layoutU->addWidget(level_content_label, i , 2, 1, 1);
                 layoutU->addWidget(strengthen_content_label, i , 3, 1, 1);
                 layoutU->addWidget(create_time_content_label, i , 4, 1, 1);
+                layoutU->addWidget(platform_content_label, i , 5, 1, 1);
+                layoutU->addWidget(platform_uid_content_label, i , 6, 1, 1);
 
                 i++;
             }

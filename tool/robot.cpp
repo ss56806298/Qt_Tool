@@ -42,6 +42,12 @@ robot::robot(Ui *ui, QWidget *parent) {
     last_name_box->addItems(last_name);
     menu_layout->addWidget(last_name_box, i, 3, 1, 1);
     i++;
+    menu_layout->addWidget(english_nickname_label, i, 0, 1, 1);
+    menu_layout->addWidget(english_nickname_checkbox, i, 1, 1, 1);
+    i++;
+    menu_layout->addWidget(english_nickname_num_label, i, 0, 1, 1);
+    menu_layout->addWidget(english_nickname_num_content_label, i, 1, 1, 1);
+    i++;
     menu_layout->addWidget(game_master_gender_label, i, 0, 1, 1);
     menu_layout->addWidget(game_master_gender_male_line, i, 1, 1, 1);
     menu_layout->addWidget(game_master_gender_female_line, i, 2, 1, 1);
@@ -49,6 +55,8 @@ robot::robot(Ui *ui, QWidget *parent) {
     menu_layout->addWidget(game_master_portrait_label, i, 0, 1, 1);
     portrait_box->addItems(portrait);
     menu_layout->addWidget(portrait_box, i, 1, 1, 1);
+
+    connect(english_nickname_checkbox, &QCheckBox::stateChanged, this, &robot::enNickname);
 
     //英雄信息
     i++;
@@ -284,6 +292,7 @@ void robot::beginCreate() {
     user_pvp_score_max_line->setEnabled(false);
     season_checkbox->setEnabled(false);
     user_season_num_line->setEnabled(false);
+    english_nickname_checkbox->setEnabled(false);
 
     user_monster_add_button->setEnabled(false);
     user_weapon_add_button->setEnabled(false);
@@ -295,10 +304,15 @@ void robot::beginCreate() {
 
 //继续生成
 void robot::continueCreate() {
-    QString first = makeRand(first_name);
-    QString middle = makeRand(middle_name);
-    QString last = makeRand(last_name);
-    QString name = first + middle + last;
+    QString name;
+    if (english_nickname_checkbox->checkState() == Qt::Checked) {
+        name = makeRand(en_nicknames);
+    } else {
+        QString first = makeRand(first_name);
+        QString middle = makeRand(middle_name);
+        QString last = makeRand(last_name);
+        name = first + middle + last;
+    }
 
     QString weapon = makeRand(weapons);
     QString helmet = makeRand(helmets);
@@ -395,14 +409,14 @@ void robot::resultAppear(QNetworkReply *reply) {
         if (result == "success") {
            create_log_browser->append("创建成功,剩余" + QString::number(create_num, 10) + "个");
         } else {
-           create_log_browser->append("创建失败," + result + ",剩余" + QString::number(create_num, 10) + "个");
+           create_log_browser->append("创建失败," + result + ",剩余" + QString::number(create_num, 10) + "个, reason: " + result);
         }
 
         r_manager->clearConnectionCache();
         r_manager->clearAccessCache();
 
     } else {
-        create_log_browser->append("创建失败,网络异常,剩余" + QString::number(create_num, 10) + "个");
+        create_log_browser->append("创建失败,剩余" + QString::number(create_num, 10) + "个,reason: " + QString(reply->readAll()));
     }
 
     if (create_num <= 0) {
@@ -433,6 +447,7 @@ void robot::endCreate() {
     user_pvp_score_max_line->setEnabled(true);
     season_checkbox->setEnabled(true);
     user_season_num_line->setEnabled(true);
+    english_nickname_checkbox->setEnabled(true);
 
     user_monster_add_button->setEnabled(true);
     user_weapon_add_button->setEnabled(true);
@@ -473,6 +488,61 @@ QString robot::makeRand(QMap <QString, int> map) {
         }
     }
     return key;
+}
+
+//是否为英文的昵称生成
+void robot::enNickname(int checkState)
+{
+    if (checkState == 2 && en_nicknames.empty()) {
+        QFile csv("./csv/random_names.csv");
+        if (!csv.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            create_log_browser->append("<div style=\"color:#FF0000\">csv读取失败</div>");
+        }
+
+        QTextStream in(&csv);
+        QString line;
+        while(!in.atEnd()) {
+            line = in.readLine();
+        }
+        int i;
+        int j = 0;
+        int k = 0;
+        QString out = "";
+        QString key;
+        QString value;
+
+        for(i=0;i<line.size();i++) {
+            QString single = line.at(i);
+            if (single == "\"") {
+                switch (j) {
+                    case 1:
+                        key = out;
+                        j++;
+                        break;
+                    case 0:
+                    case 2:
+                        out = "";
+                        j++;
+                        break;
+                    case 3:
+                        value = out;
+                        if (k != 0) {
+                            en_nicknames << value;
+                        }
+                        j = 0;
+                        k++;
+                    break;
+                }
+
+
+            } else {
+                out += single;
+            }
+
+        }
+
+        english_nickname_num_content_label->setText("<div style=\"color:#2E8B57\">"+ QString::number(en_nicknames.size(), 10) + "</div>");
+    }
 }
 
 //确定服务器的信息

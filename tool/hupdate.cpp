@@ -4,6 +4,7 @@
 #include "windows.h"
 #include <QEventLoop>
 #include <time.h>
+#include <qDebug>
 
 hupdate::hupdate(Ui *ui, QWidget *parent) {
 
@@ -225,6 +226,7 @@ void hupdate::uploadFilesBegin() {
             if (reply->error() == QNetworkReply::NoError) {
                 upload_result_browser->append("七牛资源上传成功");
             } else {
+                qDebug() << reply->readAll();
                 upload_result_browser->append("七牛资源上传失败");
                 continue;
             }
@@ -315,7 +317,8 @@ void hupdate::getBuckets(QNetworkReply *reply) {
     if (reply->error() == QNetworkReply::NoError) {
         //解析JSON
         QJsonParseError error;
-        QJsonDocument jsonDocument = QJsonDocument::fromJson(reply->readAll(), &error);
+        QByteArray json_byte = reply->readAll();
+        QJsonDocument jsonDocument = QJsonDocument::fromJson(json_byte, &error);
         if (error.error == QJsonParseError::NoError) {
             QVariantList buckets = jsonDocument.toVariant().toList();
 
@@ -326,6 +329,9 @@ void hupdate::getBuckets(QNetworkReply *reply) {
             upload_result_browser->append("获取存储空间成功,可以开始上传");
             upload_begin_button->setEnabled(true);
 
+        } else if (json_byte == "null"){
+             upload_result_browser->append("存储空间为空,可以开始上传");
+             upload_begin_button->setEnabled(true);
         } else {
             upload_result_browser->append("获取存储空间失败,请联系管理员");
         }

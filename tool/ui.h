@@ -28,6 +28,8 @@
 class Ui : public QMainWindow
 {
     public:
+//    QString main_server_ip = "localhost";
+//        QString main_server_ip = "pg-login.iclubjoy.com";
 //        QString main_server_ip = "119.29.66.60";
 //        QString main_server_ip = "taptap.yxlc.shadowpower.cn";
         QString main_server_ip = "yxlc.shadowpower.cn:82";

@@ -46,6 +46,12 @@ class datam:public QMainWindow
         QLabel *vip_level_label = new QLabel("等级");
         QLabel *vip_exp_label = new QLabel("经验");
 
+        QLabel *login_banned_label = new QLabel("限制登录");
+        QLabel *login_banned_stat_label = new QLabel;
+
+        QLabel *silent_label = new QLabel("禁言状态");
+        QLabel *silent_stat_label = new QLabel;
+
         //输入框
         QLineEdit *user_id_line = new QLineEdit;
 
@@ -72,6 +78,7 @@ class datam:public QMainWindow
         QWidget *game_master_widget = new QWidget;
         QWidget *game_master_status_widget  = new QWidget;
         QWidget *vip_widget = new QWidget;
+        QWidget *punish_widget = new QWidget;
 
         QWidget *top_widget = new QWidget;
         QWidget *up_widget = new QWidget;
@@ -83,6 +90,7 @@ class datam:public QMainWindow
         QGridLayout *game_master_layout = new QGridLayout;
         QGridLayout *game_master_status_layout = new QGridLayout;
         QGridLayout *vip_layout = new QGridLayout;
+        QGridLayout *punish_layout = new QGridLayout;
 
         QHBoxLayout *top_layout = new QHBoxLayout;
         QHBoxLayout *up_layout = new QHBoxLayout;
@@ -112,9 +120,14 @@ class datam:public QMainWindow
         void searchUser();
         void setGameMaster(QVariantMap game_master);
         void setVipInfo(QVariantMap vip_info);
+        void setPunishInfo(int login_banned_flag, int chat_banned_flag);
 
         void modifyGameMaster();
         void modifyVipInfo();
+
+        void showMonsterInfo();
+        void showWeaponInfo();
+        void showGuardInfo();
 
         void userIdChanged();
 };
